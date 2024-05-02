@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: "Network Manager Events"
+
+Parameters:
+  
+  EventsBusName:
+    Description: "Name for the Eventbridge Bus to be used for rule configuration"
+    Type: String
+    Default: "default"
+
+  Name:
+    Description: "Name for the Network Manager Global Network to be created"
+    Type: String
+
+Resources:
+  
+  SnsNetworkEvents:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "network-manager-events-${Name}"
+      DisplayName: !Sub "network-manager-events-${Name}"
+      KmsMasterKeyId: "alias/aws/sns"
+      FifoTopic: false
+
+  SnsNetworkEventsPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: 
+        - !GetAtt SnsNetworkEvents.TopicArn
+      PolicyDocument:
+        Statement:
+          - Sid: AllowPublish
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Ref AWS::AccountId
+            Action: "sns:Publish"
+            Resource:
+              - !GetAtt SnsNetworkEvents.TopicArn
+          - Sid: AllowSubscribe
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Ref AWS::AccountId
+            Action: "sns:Subscribe"
+            Resource:
+              - !GetAtt SnsNetworkEvents.TopicArn
+
+  NetworkEventsProcessingLambdaFunctionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "network-manager-events-lambda-${Name}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AssociateTgwRouteTablePolicyIAMCompanion
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sns:Publish"
+                Resource: !GetAtt SnsNetworkEvents.TopicArn
+
+  NetworkEventsProcessingLambdaFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "network-manager-events-${Name}"
+      CodeUri: ../lambda/sns_publish_attributes
+      Handler: lambda_handler.handler
+      Runtime: python3.12
+      Timeout: 300
+      Role: !GetAtt NetworkEventsProcessingLambdaFunctionRole.Arn
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !GetAtt SnsNetworkEvents.TopicArn
+  
+  NetworkEventsRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "network-manager-events-${Name}"
+      EventBusName: !Ref EventsBusName
+      EventPattern: 
+        source:
+          - "aws.networkmanager"
+      Targets: 
+        - Id: events-lambda
+          Arn: !GetAtt NetworkEventsProcessingLambdaFunction.Arn
+
+  NetworkEventsProcessingLambdaPermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      Principal:  "events.amazonaws.com"
+      SourceArn: !GetAtt NetworkEventsRule.Arn
+      FunctionName: !GetAtt NetworkEventsProcessingLambdaFunction.Arn
+      
+
+Outputs:
+
+  RegionName:
+    Value: !Ref AWS::Region
+  
+  SnsNetworkEventsArn:
+    Value: !GetAtt SnsNetworkEvents.TopicArn
+  

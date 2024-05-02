@@ -1,0 +1,19 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Deny",
+        "Action": [
+          "networkmanager:UpdateVpcAttachment",
+          "networkmanager:TagResource",
+          "networkmanager:CreateVpcAttachment"
+        ],
+        "Resource": "arn:aws:networkmanager:*",
+        "Condition": {
+          "ForAnyValue:StringEquals": {
+            "aws:TagKeys": "route-domain"
+          }
+        }
+      }
+    ]
+}

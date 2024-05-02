@@ -1,0 +1,175 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: "Cloud Wan Attachment Manager"
+
+Parameters:
+  
+  Name:
+    Description: "Name of the Attachment Manager objects"
+    Type: String
+
+  AwsAccountReaderRoleArn:
+    Description: "ARN of the Management Account role to allow reading the AWS Organization Structure"
+    Type: String
+  
+  NetworkEventsSnsTopicRegion:
+    Description: "Region of the topic containing curated events from Network Manager"
+    Type: String
+    Default: us-west-2
+  
+  NetworkEventsSnsTopicArn:
+    Description: "ARN of the topic containing curated events from Network Manager"
+    Type: String
+
+  GlobalNetworkId:
+    Description: "Network Manager Global Network Id to verity management objects"
+    Type: String
+
+  CoreNetworkArn:
+    Description: "Cloud WAN Core Network ARN to manage"
+    Type: String
+  
+  SqsEventsDelaySeconds:
+    Description: "SQS delay between receiving a message, and allowing it to be visible for processing"
+    Type: Number
+    Default: 0
+
+  PerformOffendingAttachmentDeletion:
+    Description: "Allow lambda to perform attachment deletions"
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+
+  FullReturnTable:
+    Description: "Full return table containing every known network route"
+    Type: String
+  
+Resources:
+
+  CloudWanEventsSqsDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Join ["-", [!Ref Name, "dlq"]]
+      SqsManagedSseEnabled: true
+
+  CloudWanEventsSqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref Name
+      SqsManagedSseEnabled: true
+      DelaySeconds: !Ref SqsEventsDelaySeconds
+      VisibilityTimeout: 96
+      RedrivePolicy:
+        deadLetterTargetArn : !GetAtt CloudWanEventsSqsDlq.Arn
+        maxReceiveCount : 3 
+      
+  CloudWanEventsSqsPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F21
+            reason: "SQS Queue policy should not allow * principal | False positive, principal is restricted by condition."
+    Properties:
+      Queues: 
+        - !GetAtt CloudWanEventsSqs.QueueUrl
+      PolicyDocument:
+        Statement: 
+        - Effect: "Allow"
+          Action: 
+            - "SQS:SendMessage" 
+          Resource: !GetAtt CloudWanEventsSqs.Arn
+          Principal:  
+            AWS: "*" 
+          Condition:
+            ArnEquals:
+              "aws:SourceArn": !Ref NetworkEventsSnsTopicArn
+      
+
+  SegmentControlLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join ["-", [!Ref Name, !Ref AWS::Region, "segment", "control"] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AssociateTgwRouteTablePolicyIAMCompanion
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "networkmanager:Get*"
+                  - "networkmanager:List*"
+                  - "networkmanager:DeleteAttachment"
+                  - "networkmanager:TagResource"
+                  - "networkmanager:GetNetworkRoutes"
+                  - "ec2:DescribeRegions"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - "sts:AssumeRole"
+                Resource: !Ref AwsAccountReaderRoleArn
+              - Effect: Allow
+                Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:SendMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                Resource: !GetAtt CloudWanEventsSqs.Arn
+
+  SegmentControlLambdaFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Join ["-", [!Ref Name, "segment", "control"] ]
+      CodeUri: ../lambda/attachment_manager
+      Handler: lambda_handler.handler
+      Runtime: python3.12
+      Timeout: 90
+      Role: !GetAtt SegmentControlLambdaRole.Arn
+      Environment:
+        Variables:
+          AWS_ACCOUNT_READ_ROLE_ARN: !Ref AwsAccountReaderRoleArn
+          MANAGED_CORE_NETWORK_ARN: !Ref CoreNetworkArn
+          MANAGED_GLOBAL_NETWORK_ID: !Ref GlobalNetworkId
+          FULL_RETURN_TABLE: !Ref FullReturnTable
+          PERFORM_ATTACHMENT_DELETIONS: !Ref PerformOffendingAttachmentDeletion
+          SQS_URL: !GetAtt CloudWanEventsSqs.QueueUrl
+          SEGMENT_ADDRESSING_FILE: vpc_segment_address_map.yml
+          
+  SegmentControlLambdaSqsPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt SegmentControlLambdaFunction.Arn
+      Principal: "sqs.amazonaws.com"
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !GetAtt CloudWanEventsSqs.Arn
+
+  SegmentControlLambdaSqsEventMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt CloudWanEventsSqs.Arn
+      FunctionName: !GetAtt SegmentControlLambdaFunction.Arn
+  
+  CloudWanEventsSqsSubscriptionToSns:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: sqs
+      Endpoint: !GetAtt CloudWanEventsSqs.Arn
+      Region: !Ref NetworkEventsSnsTopicRegion
+      TopicArn: !Ref NetworkEventsSnsTopicArn
+      FilterPolicy:
+        coreUplinkArn:
+          - !Ref CoreNetworkArn
