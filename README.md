@@ -25,8 +25,6 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
 
 ## Overview
 
-AWS Cloud WAN is a fully managed service that creates a global Core Network in AWS, abstracting network configuration complexity by using policies which describe intent about (i) traffic isolation and segmentation, (ii) routing, and (iii) network attachment association. Most organizations tend to keep user VPC provisioning a centralized process while other organisations attempt to move it to the edge in the form of service catalog products which can be self-provisioned at the expense of complex, inflexible and sometimes obscure automations.
-
 AWS Cloud WAN natively supports the use of tags in the Core network attachment, which can be used to specify the desired network segment. In some cases, additional capabilities are required over and above those offered by a tag to segment mapping - such as supporting on-demand VPC creation and attachment, which raises two considerations:
 
 - The user account should not be able to express an opinion, in a form of a tag, as to which network segment it should belong (e.g. test account associating to the production segment). Using the existing mechanism of tag to segment association, we want to ensure
@@ -223,12 +221,17 @@ Consider formatting this section based on Keep a Changelog, and adhering to Sema
 
 ## Notices
 
-Include a legal disclaimer
-
-**Example:**
 *Customers are responsible for making their own independent assessment of the information in this Guidance. This Guidance: (a) is for informational purposes only, (b) represents AWS current product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS products or services are provided “as is” without warranties, representations, or conditions of any kind, whether express or implied. AWS responsibilities and liabilities to its customers are controlled by AWS agreements, and this Guidance is not part of, nor does it modify, any agreement between AWS and its customers.*
 
+## License
+
+This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
+
+## Contributing
+
+See [CONTRIBUTING](CONTRIBUTING.md) for more information.
 
 ## Authors
 
-Name of code contributors
+- João Rodrigues, Senior Cloud Infrastructure Architect, AWS
+- Srivalsan Mannoor Sudhagar, Cloud Infrastructure Architect, AWS
