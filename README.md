@@ -72,14 +72,14 @@ Replace this amount with the approximate cost for running your Guidance in the d
 Suggest you keep this boilerplate text:
 _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance._
 
-### Sample Cost Table
-
 The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
 
 | AWS service  | Dimensions | Cost [USD] |
 | ----------- | ------------ | ------------ |
 | Amazon API Gateway | 1,000,000 REST API calls per month  | $ 3.50month |
 | Amazon Cognito | 1,000 active users per month without advanced security feature | $ 0.00 |
+
+
 
 ## Prerequisites
 
@@ -188,48 +188,20 @@ Provide suggestions and recommendations about how customers can modify the param
 - If the Guidance requires manual deletion of resources, such as the content of an S3 bucket, please specify.
 
 
-
-## FAQ, known issues, additional considerations, and limitations (optional)
-
-
-**Known issues (optional)**
-
-<If there are common known issues, or errors that can occur during the Guidance deployment, describe the issue and resolution steps here>
-
-
-**Additional considerations (if applicable)**
-
-<Include considerations the customer must know while using the Guidance, such as anti-patterns, or billing considerations.>
-
-**Examples:**
-
-- “This Guidance creates a public AWS bucket required for the use-case.”
-- “This Guidance created an Amazon SageMaker notebook that is billed per hour irrespective of usage.”
-- “This Guidance creates unauthenticated public API endpoints.”
-
-
-Provide a link to the *GitHub issues page* for users to provide feedback.
-
-
-**Example:** *“For any feedback, questions, or suggestions, please use the issues tab under this repo.”*
-
-## Revisions
-
-Document all notable changes to this project.
-
-Consider formatting this section based on Keep a Changelog, and adhering to Semantic Versioning.
-
 ## Notices
 
 *Customers are responsible for making their own independent assessment of the information in this Guidance. This Guidance: (a) is for informational purposes only, (b) represents AWS current product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS products or services are provided “as is” without warranties, representations, or conditions of any kind, whether express or implied. AWS responsibilities and liabilities to its customers are controlled by AWS agreements, and this Guidance is not part of, nor does it modify, any agreement between AWS and its customers.*
+
 
 ## License
 
 This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
 
+
 ## Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for more information.
+
 
 ## Authors
 
