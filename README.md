@@ -2,7 +2,6 @@
 
 This Guidance builds a [Serverless](https://aws.amazon.com/serverless/) proxy enabling [Amazon VPC Lattice](https://aws.amazon.com/vpc/lattice/) services to be reached by consumers that reside outside of the Amazon Virtual Private Cloud ([VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)) both from trusted (on-premise or cross-Region) and non-trusted (external) locations.
 
-![image](./img/attachment-manager-architecture.png)
 
 
 ## Table of Content
@@ -33,6 +32,8 @@ This Guidance builds a [Serverless](https://aws.amazon.com/serverless/) proxy en
 
 2. Include the architecture diagram image, as well as the steps explaining the high-level overview and flow of the architecture. 
     - To add a screenshot, create an ‘assets/images’ folder in your repository and upload your screenshot to it. Then, using the relative file path, add it to your README. 
+
+![image](./assets/images/attachment-manager-architecture.png)
 
 ### Cost
 
