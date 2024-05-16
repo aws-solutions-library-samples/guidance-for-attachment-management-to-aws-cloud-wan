@@ -10,6 +10,7 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
     - [Cost](#cost)
 2. [Prerequisites](#prerequisites)
     - [Operating System](#operating-system)
+    - [AWS account requirements](#aws-account-requirements)
 3. [Deployment Steps](#deployment-steps)
 4. [Deployment Validation](#deployment-validation)
 5. [Running the Guidance](#running-the-guidance)
@@ -150,8 +151,6 @@ The following code snippet shows the declaration of these segments as part of th
   ...
 }
 ```
-
-#### 1. Modify the AWS Cloud WAN Core network policy (i.e. segments and association method)
 
 The next pre-requisite in the Cloud WAN network policy will be specifying the association method. This will only contain two attachment policies to manage the admission of attachments to the correct segments:
 
