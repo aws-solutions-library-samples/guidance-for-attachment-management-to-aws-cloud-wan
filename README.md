@@ -25,16 +25,13 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
 
 ## Overview
 
-AWS Cloud WAN is a fully managed service that creates a global Core Network in AWS, abstracting network configuration complexity by using policies which describe intent about (i) traffic isolation and segmentation, (ii) routing, and (iii) network attachment association. Most organizations tend to keep user VPC provisioning a centralized process while other organisations attempt to move it to the edge in the form of service catalog products which can be self-provisioned at the expense of complex, inflexible and sometimes obscure automations. When considering ease of operation and automation, architecture simplicity and the need to follow a principle of least privilege, two ubiquitous challenges exist:
+AWS Cloud WAN is a fully managed service that creates a global Core Network in AWS, abstracting network configuration complexity by using policies which describe intent about (i) traffic isolation and segmentation, (ii) routing, and (iii) network attachment association. Most organizations tend to keep user VPC provisioning a centralized process while other organisations attempt to move it to the edge in the form of service catalog products which can be self-provisioned at the expense of complex, inflexible and sometimes obscure automations.
 
-1. How to achieve network isolation for the different applications and types of traffic? (e.g. production, testing, pci-dss, etc);
-2. How can we allow users to self-service the admission of their VPCs on-demand to the Core network, in an easy to use, deterministic, secure, and fully automated manner without involving central infrastructure teams?
+AWS Cloud WAN natively supports the use of tags in the Core network attachment, which can be used to specify the desired network segment. In some cases, additional capabilities are required over and above those offered by a tag to segment mapping - such as supporting on-demand VPC creation and attachment, which raises two considerations:
 
-The answer to the first point above is straight-forward: you can use an AWS Cloud WAN segment with the appropriate configuration and routing in place. As for the second point, AWS Cloud WAN natively supports the use of tags in the Core network attachment, which can be used to specify the desired network segment. In some cases, additional capabilities are required over and above those offered by a tag to segment mapping - such as supporting on-demand VPC creation and attachment, which raises two considerations:
-
-a) The user account should not be able to express an opinion, in a form of a tag, as to which network segment it should belong (e.g. test account associating to the production segment). Using the existing mechanism of tag to segment association, we want to ensure
+- The user account should not be able to express an opinion, in a form of a tag, as to which network segment it should belong (e.g. test account associating to the production segment). Using the existing mechanism of tag to segment association, we want to ensure
 the tagging of the attachment can only be performed from the network account, using network control plane events in a fully automated way;
-b) In cases where the use of [Amazon VPC IP Address Manager (IPAM)](https://docs.aws.amazon.com/vpc/latest/ipam/what-it-is-ipam.html), is not being enforced, there is a risk of introducing routing black-holes and duplicated addressing in the global network by allowing incorrectly addressed VPCs;
+- In cases where the use of [Amazon VPC IP Address Manager (IPAM)](https://docs.aws.amazon.com/vpc/latest/ipam/what-it-is-ipam.html), is not being enforced, there is a risk of introducing routing black-holes and duplicated addressing in the global network by allowing incorrectly addressed VPCs;
 
 This solution consists of an event-based architecture, working at the control plane of the Core network, through the processing of AWS Network Manager events. This solution provides a scalable, secure and flexible way of providing on-demand VPC admission to the Core-network, with the following properties, features and use-cases:
 
