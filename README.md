@@ -192,7 +192,7 @@ The following code snippet shows the declaration of the association method in th
 
 #### 2. Create a Service Control Policy (SCP) to prevent user accounts from using the segment association tag
 
-The next pre-requisite is to make sure that principals in the AWS User account cannot use the route-domain tag when interacting with the Cloud WAN Core network attachment. Users should be prevented from specifying segment membership metadata. The following SCP example can be used to enforce this pre-requisite and should be applied within the AWS Management Account and for every Organization Unit which is not centrally managed by the infrastructure team
+The next pre-requisite is to make sure that principals in the AWS User account cannot use the ```route-domain``` tag when interacting with the Cloud WAN Core network attachment. Users should be prevented from specifying segment membership metadata. The following SCP example can be used to enforce this pre-requisite and should be applied within the AWS Management Account and for every Organization Unit which is not centrally managed by the infrastructure team
 
 
 ```
@@ -213,17 +213,60 @@ The next pre-requisite is to make sure that principals in the AWS User account c
     }
   ]
 }
-
 ```
+
+Note: Depending on the Infrastructure as Code (IaC) tool you are using, your users may need to mark the tag configuration of the network attachments to be ignored (e.g. if using Terraform you will need to use a ```lifecycle``` statement) to prevent attempts of tag overwrite and API errors due to the SCP.
 
 
 #### 3. Create an AWS Identity and Access Management (IAM) role in the AWS Management Account which allows the querying of AWS Account Tags from the Central Network account
 
+The next pre-requisite, is to have an IAM role deployed in the AWS Management account which your Network Account can assume. This role will only allow you to query AWS Account Tags in the [AWS Organizations](https://aws.amazon.com/organizations/) API for the solution to discover the target segment for VPCs created within the account.
+
+Here's an example of the Trust Policy:
+
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {s
+        "AWS": "arn:aws:iam::$NETWORK_ACCOUNT_ID:root"
+      },
+      "Action": [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }
+  ]
+}
+```
+
+And here are the permissions for this role:
+
+
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "organizations:Describe*",
+        "organizations:List*"
+      ],
+      "Effect": "Allow",
+      "Resource": "*",
+      "Sid": "DescribeOrgAccounts"
+    }
+  ]
+}
+```
 
 
 #### 4. User accounts are tagged with the appropriate route segment / domain tag, as part of the account vending process
 
-
+Finally, you need to ensure that your user accounts are tagged with the appropriate ```route-domain``` tag as part of the account vending process (for example : Production accounts would have a ```route-domain: production``` tag, matching an existing ```production``` segment)
 
 
 *List out pre-requisites required on the AWS account if applicable, this includes enabling AWS regions, requiring ACM certificate.*
