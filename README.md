@@ -266,31 +266,8 @@ And here are the permissions for this role:
 
 #### 4. User accounts are tagged with the appropriate route segment / domain tag, as part of the account vending process
 
-Finally, you need to ensure that your user accounts are tagged with the appropriate ```route-domain``` tag as part of the account vending process (for example : Production accounts would have a ```route-domain: production``` tag, matching an existing ```production``` segment)
+Finally, you need to ensure that your user accounts are tagged with the appropriate ```route-domain``` tag as part of the account vending process (for example: Production accounts would have a ```route-domain: production``` tag, matching an existing ```production``` segment)
 
-
-*List out pre-requisites required on the AWS account if applicable, this includes enabling AWS regions, requiring ACM certificate.*
-
-**Example:** “This deployment requires you have public ACM certificate available in your AWS account”
-
-**Example resources:**
-- ACM certificate 
-- DNS record
-- S3 bucket
-- VPC
-- IAM role with specific permissions
-- Enabling a Region or service etc.
-
-
-### aws cdk bootstrap (if sample code has aws-cdk)
-
-<If using aws-cdk, include steps for account bootstrap for new cdk users.>
-
-**Example blurb:** “This Guidance uses aws-cdk. If you are using aws-cdk for first time, please perform the below bootstrapping....”
-
-### Service limits  (if applicable)
-
-<Talk about any critical service limits that affect the regular functioning of the Guidance. If the Guidance requires service limit increase, include the service name, limit name and link to the service quotas page.>
 
 ### Supported Regions (if applicable)
 
