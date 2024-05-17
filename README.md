@@ -12,9 +12,6 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
     - [Operating System](#operating-system)
     - [AWS account requirements](#aws-account-requirements)
 3. [Deployment Steps](#deployment-steps)
-    - [Network Manager Event Processor stack](#network-manager-event-processor-stack)
-    - [Attachment Manager stack - main region](#attachment-manager-stack---main-region)
-    - [Attachment Manager stack - redundant region (optional)](#attachment-manager-stack---redundant-region-optional)
 4. [Deployment Validation](#deployment-validation)
 5. [Running the Guidance](#running-the-guidance)
 6. [Next Steps](#next-steps)
@@ -318,19 +315,85 @@ This solution is composed of two types of stacks, with the following regional re
 
 ## Deployment Steps
 
-### Network Manager Event Processor stack
-
-content...
+1. Deploy the 'Network Manager Event Processor' stack:
 
 
-### Attachment Manager stack - main region
+```
+cd src/network-manager-events/cloudformation/
 
-content...
+# Build the lambda and deploy the cloudformation stack
+sam build && sam deploy \
+  --resolve-s3 \
+  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
+  --stack-name network-manager-events \
+  --region us-west-2 \
+  --parameter-overrides \
+      ParameterKey=Name,ParameterValue="network-manager-events"
+
+# Let's grab the outputs
+NETWORK_MANAGER_STACK_OUTPUT=$(aws cloudformation describe-stacks \
+  --stack-name network-manager-events \
+  --region us-west-2 \
+  --query 'Stacks[0].Outputs')
+SNS_TOPIC_ARN=$(echo $NETWORK_MANAGER_STACK_OUTPUT | jq -r '.[] | select(.OutputKey=="SnsNetworkEventsArn") | .OutputValue')
+
+cd -
+```
 
 
-### Attachment Manager stack - redundant region (optional)
+2. Deploy the 'Attachment Manager stack - main region':
 
-content...
+```
+# Variables to add
+GLOBAL_NETWORK_ID="<insert Network Manager Global Network id here>"
+ATTACHMENT_MANAGER_NAME="cloudwan-attachment-manager"
+AWS_ACCOUNT_READER_ROLE_ARN="<insert arn of IAM Role to read the account tags (aws pre-requisite 3)>"
+CORE_NETWORK_ARN="<insert Cloud WAN Core Network arn here>"
+FULL_RETURN_TABLE="fullreturn"
+
+
+cd src/network-manager-events/attachment-manager/
+
+aws cloudformation validate-template \
+  --template-body file://template.yml \
+  --region $MAIN_AWS_REGION
+
+# Copy the vpc segment address map to be packaged with the lambda
+cp vpc_segment_address_map.yml ../lambda/attachment_manager
+
+# Build the lambda and deploy the cloudformation stack
+sam build && sam deploy \
+  --resolve-s3 \
+  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
+  --stack-name cloudwan-attachment-manager \
+  --region $MAIN_AWS_REGION \
+  --parameter-overrides \
+      ParameterKey=Name,ParameterValue=${ATTACHMENT_MANAGER_NAME} \
+      ParameterKey=AwsAccountReaderRoleArn,ParameterValue=${AWS_ACCOUNT_READER_ROLE_ARN} \
+      ParameterKey=NetworkEventsSnsTopicArn,ParameterValue=${SNS_TOPIC_ARN} \
+      ParameterKey=GlobalNetworkId,ParameterValue=${GLOBAL_NETWORK_ID} \
+      ParameterKey=CoreNetworkArn,ParameterValue=${CORE_NETWORK_ARN} \
+      ParameterKey=FullReturnTable,ParameterValue=${FULL_RETURN_TABLE}
+```
+
+
+3. Attachment Manager stack - redundant region (optional):
+
+```
+sam build && sam deploy \
+  --resolve-s3 \
+  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
+  --stack-name cloudwan-attachment-manager \
+  --region $REDUNDANT_AWS_REGION \
+  --parameter-overrides \
+      ParameterKey=Name,ParameterValue=${ATTACHMENT_MANAGER_NAME} \
+      ParameterKey=AwsAccountReaderRoleArn,ParameterValue=${AWS_ACCOUNT_READER_ROLE_ARN} \
+      ParameterKey=NetworkEventsSnsTopicArn,ParameterValue=${SNS_TOPIC_ARN} \
+      ParameterKey=GlobalNetworkId,ParameterValue=${GLOBAL_NETWORK_ID} \
+      ParameterKey=CoreNetworkArn,ParameterValue=${CORE_NETWORK_ARN} \
+      ParameterKey=FullReturnTable,ParameterValue=${FULL_RETURN_TABLE} \
+      ParameterKey=SqsEventsDelaySeconds,ParameterValue="15"
+```
 
 
 Deployment steps must be numbered, comprehensive, and usable to customers at any level of AWS expertise. The steps must include the precise commands to run, and describe the action it performs.
