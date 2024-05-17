@@ -58,6 +58,33 @@ The architecture of the solution can be seen in the below diagram, followed by t
 8. If the evaluation logic is successful, the Lambda function will then tag the Spoke VPC attachment with the correct tag, to ensure it is admitted to the correct segment. Otherwise, the attachment will be deleted.
 
 
+Optionally we can also enforce IP Address planning coherence for specific regions and segments. The following code snippet shows a YAML example for the definition of the VPC Segment Network map (i.e. file ```vpc_segment_address_map.yml``` in the lambda function folder), describing a list of accepted IP Address ranges defined per segment and region. This configuration will be in a file which is packaged with the lambda function that performs the segment admission controls (this file should be generated of copied into the lambda source code function as part of the CI/CD job). To completely disable the checks you can keep the file empty with {} (i.e. empty dictionary syntax in YAML).
+
+```
+infrastructure:
+  eu-central-1:
+    - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
+  ap-southeast-1:
+    - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
+
+dev:
+  eu-central-1:
+    - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
+  ap-southeast-1:
+    - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
+
+staging:
+  eu-central-1:
+    - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
+  ap-southeast-1:
+    - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
+
+prod:
+  eu-central-1:
+    - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
+  ap-southeast-1:
+    - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
+```
 
 
 ### Cost (TODO)
@@ -86,14 +113,27 @@ The following table provides a sample cost breakdown for deploying this Guidance
 
 ### Operating System
 
-- Talk about the base Operating System (OS) and environment that can be used to run or deploy this Guidance, such as *Mac, Linux, or Windows*. Include all installable packages or modules required for the deployment. 
-- By default, assume Amazon Linux 2/Amazon Linux 2023 AMI as the base environment. All packages that are not available by default in AMI must be listed out.  Include the specific version number of the package or module.
+The deployment method for this guide was tested on an Ubuntu 22.04 Operating System. It should run on any new and supported version of Mac OS X, Linux or Windows, assuming you can install the required packages.
 
-**Example:**
-“These deployment instructions are optimized to best work on **<Amazon Linux 2 AMI>**.  Deployment in another OS may require additional steps.”
+In this guide we cover launching the solution using [CloudFormation]() and [AWS Serverless Application Model (SAM)]() to do the packaging and pushing the lambdas. The easiest way to install SAM is through [brew](). Here's how you could setup your environment on an Ubuntu 22.04 host.
 
-- Include install commands for packages, if applicable.
+```
+# Update and install basic tools
+apt update && apt upgrade -y
+apt install -y build-essential procps curl file git
 
+# Install brew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# Install AWS CLI and SAM
+brew install aws-sam-cli awscli
+
+```
+
+
+[Terraform]() (or [OpenTofu]()) and [Cloud Development Kit for Terraform (CDK-TF)]() implementations are also available in this repository, but will not be covered in this example.
 
 
 ### AWS account requirements
