@@ -403,7 +403,6 @@ sam build && sam deploy \
 
 ```
 ...
-
 Successfully created/updated stack - network-manager-events in us-west-2
 ```
 
@@ -412,21 +411,15 @@ Successfully created/updated stack - network-manager-events in us-west-2
 
 ```
 ...
-
 Successfully created/updated stack - cloudwan-attachment-manager in eu-west-1
-
 ```
 
 
 3. Verify the 'Attachment Manager' stack deployment output from the SAM execution, in the redundant region (optional):
 
 ```
-
 ...
-
 Successfully created/updated stack - cloudwan-attachment-manager-secondary in us-east-1
-
-
 ```
 
 
