@@ -352,7 +352,7 @@ CORE_NETWORK_ARN="<insert Cloud WAN Core Network arn here>"
 FULL_RETURN_TABLE="fullreturn"
 
 
-cd source/network-manager-events/attachment-manager/
+cd source/attachment-manager/cloudformation/
 
 aws cloudformation validate-template \
   --template-body file://template.yml \
@@ -383,7 +383,7 @@ sam build && sam deploy \
 sam build && sam deploy \
   --resolve-s3 \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-  --stack-name cloudwan-attachment-manager \
+  --stack-name cloudwan-attachment-manager-secondary \
   --region $REDUNDANT_AWS_REGION \
   --parameter-overrides \
       ParameterKey=Name,ParameterValue=${ATTACHMENT_MANAGER_NAME} \
@@ -399,41 +399,38 @@ sam build && sam deploy \
 ## Deployment Validation
 
 
-1. Verify the 'Network Manager Event Processor' stack deployment:
+1. Verify the 'Network Manager Event Processor' stack deployment output from the SAM execution:
 
 ```
+...
 
-```
-
-
-2. Verify the 'Attachment Manager' stack deployment in the main region:
-
-```
-
+Successfully created/updated stack - network-manager-events in us-west-2
 ```
 
 
-3. Verify the 'Attachment Manager' stack deployment in the redundant region (optional):
+2. Verify the 'Attachment Manager' stack deployment output from the SAM execution, in the main region:
+
+```
+...
+
+Successfully created/updated stack - cloudwan-attachment-manager in eu-west-1
 
 ```
 
+
+3. Verify the 'Attachment Manager' stack deployment output from the SAM execution, in the redundant region (optional):
+
+```
+
+...
+
+Successfully created/updated stack - cloudwan-attachment-manager-secondary in us-east-1
+
+
 ```
 
 
-
-
-<Provide steps to validate a successful deployment, such as terminal output, verifying that the resource is created, status of the CloudFormation template, etc.>
-
-
-**Examples:**
-
-* Open CloudFormation console and verify the status of the template with the name starting with xxxxxx.
-* If deployment is successful, you should see an active database instance with the name starting with <xxxxx> in        the RDS console.
-*  Run the following CLI command to validate the deployment: ```aws cloudformation describe xxxxxxxxxxxxx```
-
-
-
-## Running the Guidance
+## Running the Guidance (TODO)
 
 <Provide instructions to run the Guidance with the sample data or input provided, and interpret the output received.> 
 
@@ -446,15 +443,41 @@ This section should include:
 
 
 
-## Next Steps
+## Next Steps (TOD)
 
 Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
 
 
 ## Cleanup
 
-- Include detailed instructions, commands, and console actions to delete the deployed Guidance.
-- If the Guidance requires manual deletion of resources, such as the content of an S3 bucket, please specify.
+To remove the solution, you can execute the following SAM CLI commands:
+
+1. Delete Attachment Manager Stack in the main region
+
+```
+sam delete --no-prompts \
+  --stack-name cloudwan-attachment-manager \
+  --region eu-west-1
+```
+
+2. Delete Attachment Manager Stack in the secondary region
+
+```
+sam delete --no-prompts \
+  --stack-name cloudwan-attachment-manager-secondary \
+  --region us-east-1
+```
+
+3. Delete the Network Manager Events Stack in us-west-2
+
+```
+sam delete --no-prompts \
+  --stack-name network-manager-events \
+  --region us-west-2
+```
+
+
+To remove the SAM bootstrap, you can go to the console for each of the regions, empty all the relevant buckets from the S3 console, and finally delete the CloudFormation stacks with name aws-sam-cli-managed-default.
 
 
 ## Notices
