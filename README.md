@@ -319,7 +319,7 @@ This solution is composed of two types of stacks, with the following regional re
 
 
 ```
-cd src/network-manager-events/cloudformation/
+cd source/network-manager-events/cloudformation/
 
 # Build the lambda and deploy the cloudformation stack
 sam build && sam deploy \
@@ -341,10 +341,10 @@ cd -
 ```
 
 
-2. Deploy the 'Attachment Manager stack - main region':
+2. Deploy the 'Attachment Manager' stack in the main region (don't forget to populate the variables below):
 
 ```
-# Variables to add
+# Set the variables with your correct values
 GLOBAL_NETWORK_ID="<insert Network Manager Global Network id here>"
 ATTACHMENT_MANAGER_NAME="cloudwan-attachment-manager"
 AWS_ACCOUNT_READER_ROLE_ARN="<insert arn of IAM Role to read the account tags (aws pre-requisite 3)>"
@@ -352,7 +352,7 @@ CORE_NETWORK_ARN="<insert Cloud WAN Core Network arn here>"
 FULL_RETURN_TABLE="fullreturn"
 
 
-cd src/network-manager-events/attachment-manager/
+cd source/network-manager-events/attachment-manager/
 
 aws cloudformation validate-template \
   --template-body file://template.yml \
@@ -377,7 +377,7 @@ sam build && sam deploy \
 ```
 
 
-3. Attachment Manager stack - redundant region (optional):
+3. Deploy the 'Attachment Manager' stack in the redundant region (optional):
 
 ```
 sam build && sam deploy \
@@ -396,27 +396,31 @@ sam build && sam deploy \
 ```
 
 
-Deployment steps must be numbered, comprehensive, and usable to customers at any level of AWS expertise. The steps must include the precise commands to run, and describe the action it performs.
-
-* All steps must be numbered.
-* If the step requires manual actions from the AWS console, include a screenshot if possible.
-* The steps must start with the following command to clone the repo. ```git clone xxxxxxx```
-* If applicable, provide instructions to create the Python virtual environment, and installing the packages using ```requirement.txt```.
-* If applicable, provide instructions to capture the deployed resource ARN or ID using the CLI command (recommended), or console action.
-
- 
-**Example:**
-
-1. Clone the repo using command ```git clone xxxxxxxxxx```
-2. cd to the repo folder ```cd <repo-name>```
-3. Install packages in requirements using command ```pip install requirement.txt```
-4. Edit content of **file-name** and replace **s3-bucket** with the bucket name in your account.
-5. Run this command to deploy the stack ```cdk deploy``` 
-6. Capture the domain name created by running this CLI command ```aws apigateway ............```
-
-
-
 ## Deployment Validation
+
+
+1. Verify the 'Network Manager Event Processor' stack deployment:
+
+```
+
+```
+
+
+2. Verify the 'Attachment Manager' stack deployment in the main region:
+
+```
+
+```
+
+
+3. Verify the 'Attachment Manager' stack deployment in the redundant region (optional):
+
+```
+
+```
+
+
+
 
 <Provide steps to validate a successful deployment, such as terminal output, verifying that the resource is created, status of the CloudFormation template, etc.>
 
