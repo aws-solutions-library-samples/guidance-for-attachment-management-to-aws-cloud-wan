@@ -12,6 +12,9 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
     - [Operating System](#operating-system)
     - [AWS account requirements](#aws-account-requirements)
 3. [Deployment Steps](#deployment-steps)
+    - 3.1. [Network Manager Event Processor stack](#deployment-setps-events)
+    - 3.2. [Attachment Manager stack - main region](#deployment-setps-attachment-main)
+    - 3.3. [Attachment Manager stack - redundant region (optional)](#deployment-setps-attachment-redudant)
 4. [Deployment Validation](#deployment-validation)
 5. [Running the Guidance](#running-the-guidance)
 6. [Next Steps](#next-steps)
@@ -318,13 +321,13 @@ This solution is composed of two types of stacks, with the following regional re
 
 ## Deployment Steps
 
-### 1. Network Manager Event Processor stack
+### Network Manager Event Processor stack
 
 
-### 2. Attachment Manager stack - main region
+### Attachment Manager stack - main region
 
 
-### 3. Attachment Manager stack - redundant region (optional)
+### Attachment Manager stack - redundant region (optional)
 
 
 
