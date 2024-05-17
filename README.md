@@ -323,12 +323,17 @@ This solution is composed of two types of stacks, with the following regional re
 
 ### Network Manager Event Processor stack
 
+content...
+
 
 ### Attachment Manager stack - main region
+
+content...
 
 
 ### Attachment Manager stack - redundant region (optional)
 
+content...
 
 
 Deployment steps must be numbered, comprehensive, and usable to customers at any level of AWS expertise. The steps must include the precise commands to run, and describe the action it performs.
