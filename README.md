@@ -12,20 +12,17 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
     - [Operating System](#operating-system)
     - [AWS account requirements](#aws-account-requirements)
 3. [Deployment Steps](#deployment-steps)
-    - [Network Manager Event Processor stack](#deployment-setps-events)
-    - [Attachment Manager stack - main region](#deployment-setps-attachment-main)
-    - [Attachment Manager stack - redundant region (optional)](#deployment-setps-attachment-redudant)
+    - [Network Manager Event Processor stack](#network-manager-event-processor-stack)
+    - [Attachment Manager stack - main region](#attachment-manager-stack---main-region)
+    - [Attachment Manager stack - redundant region (optional)](#attachment-manager-stack---redundant-region-optional)
 4. [Deployment Validation](#deployment-validation)
 5. [Running the Guidance](#running-the-guidance)
 6. [Next Steps](#next-steps)
 7. [Cleanup](#cleanup)
+8. [Notices](#notices)
+9. [Contributing](#contributing)
+10. [Authors](#authors)
 
-***Optional***
-
-8. [FAQ, known issues, additional considerations, and limitations](#faq-known-issues-additional-considerations-and-limitations)
-9. [Revisions](#revisions)
-10. [Notices](#notices)
-11. [Authors](#authors)
 
 ## Overview
 
