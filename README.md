@@ -129,7 +129,6 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Install AWS CLI and SAM
 brew install aws-sam-cli awscli
-
 ```
 
 
