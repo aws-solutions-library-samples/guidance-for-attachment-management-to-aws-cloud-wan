@@ -115,7 +115,7 @@ The following table provides a sample cost breakdown for deploying this Guidance
 
 The deployment method for this guide was tested on an Ubuntu 22.04 Operating System. It should run on any new and supported version of Mac OS X, Linux or Windows, assuming you can install the required packages.
 
-In this guide we cover launching the solution using [CloudFormation]() and [AWS Serverless Application Model (SAM)]() to do the packaging and pushing the lambdas. The easiest way to install SAM is through [brew](). Here's how you could setup your environment on an Ubuntu 22.04 host.
+In this guide we cover launching the solution using [CloudFormation](https://aws.amazon.com/cloudformation/) and [AWS Serverless Application Model (SAM)](https://aws.amazon.com/serverless/sam/) to do the packaging and pushing the lambdas. The easiest way to install SAM is through [brew](https://brew.sh/). Here's how you could setup your environment on an Ubuntu 22.04 host.
 
 ```
 # Update and install basic tools
@@ -133,7 +133,7 @@ brew install aws-sam-cli awscli
 ```
 
 
-[Terraform]() (or [OpenTofu]()) and [Cloud Development Kit for Terraform (CDK-TF)]() implementations are also available in this repository, but will not be covered in this example.
+[Terraform](https://www.terraform.io/) (or [OpenTofu](https://opentofu.org/)) and [Cloud Development Kit for Terraform (CDK-TF)](https://developer.hashicorp.com/terraform/cdktf) implementations are also available in this repository, but will not be covered in this example.
 
 
 ### AWS account requirements
