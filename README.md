@@ -310,10 +310,23 @@ Finally, you need to ensure that your user accounts are tagged with the appropri
 
 ### Supported Regions (if applicable)
 
-<If the Guidance is built for specific AWS Regions, or if the services used in the Guidance do not support all Regions, please specify the Region this Guidance is best suited for>
+This solution is composed of two types of stacks, with the following regional requirements:
+
+* Network Manager Event Processor Stack: needs to be deployed in Oregon Region (us-west-2);
+* Attachment Manager Stacks: can be deployed on any region.
 
 
 ## Deployment Steps
+
+### 1. Network Manager Event Processor stack
+
+
+### 2. Attachment Manager stack - main region
+
+
+### 3. Attachment Manager stack - redundant region (optional)
+
+
 
 Deployment steps must be numbered, comprehensive, and usable to customers at any level of AWS expertise. The steps must include the precise commands to run, and describe the action it performs.
 
