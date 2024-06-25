@@ -8,7 +8,6 @@ from botocore.exceptions import ClientError
 
 
 # Variable containing the path of the routing configuration file
-# export ROUTING_CONFIG_FILE="routing_config/routing_config.yml"; export AWS_ACCOUNT_READ_ROLE_ARN="arn:aws:iam::116953415465:role/org_account_reader";
 ENV_SNS_TOPIC_ARN = "SNS_TOPIC_ARN"
 
 # Initiate logging
@@ -214,17 +213,3 @@ def handler(event, context):
         raise e
 
     return
-
-# event = {
-#     "detail": {
-#         "changeType": "VPC-ATTACHMENT-CREATED",
-#         "changeDescription": "A VPC attachment has been created.",
-#         "region": "eu-west-1",
-#         "transitGatewayAttachmentArn": "arn:aws:ec2:eu-west-1:766175888570:transit-gateway-attachment/tgw-attach-0dc233d882866ce11",
-#         "vpcArn": "arn:aws:ec2:eu-west-1:766175888570:vpc/vpc-0961bfc096a6587a2",
-#         "transitGatewayArn": "arn:aws:ec2:eu-west-1:169017635628:transit-gateway/tgw-02849d567a44ee5c9"
-#     }
-# }
-# if __name__ == "__main__":
-#     handler(event, {})
-
