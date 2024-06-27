@@ -7,18 +7,19 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
 ## Table of Content
 
 1. [Overview](#overview)
+    - [Architecture](#architecture)
     - [Cost](#cost)
-2. [Prerequisites](#prerequisites)
+3. [Prerequisites](#prerequisites)
     - [Operating System](#operating-system)
     - [AWS account requirements](#aws-account-requirements)
-3. [Deployment Steps](#deployment-steps)
-4. [Deployment Validation](#deployment-validation)
-5. [Running the Guidance](#running-the-guidance)
-6. [Next Steps](#next-steps)
-7. [Cleanup](#cleanup)
-8. [Notices](#notices)
-9. [Contributing](#contributing)
-10. [Authors](#authors)
+4. [Deployment Steps](#deployment-steps)
+5. [Deployment Validation](#deployment-validation)
+6. [Running the Guidance](#running-the-guidance)
+7. [Next Steps](#next-steps)
+8. [Cleanup](#cleanup)
+9. [Notices](#notices)
+10. [Contributing](#contributing)
+11. [Authors](#authors)
 
 
 ## Overview
@@ -39,10 +40,10 @@ This solution consists of an event-based architecture, working at the control pl
 - Easily overwrite the behavior of the solution under controlled circumstances (e.g. changes performed by the central infrastructure team);
 - Ability to extend further logic and functionality to the original solution;
 
-
+### Architecture
 The architecture of the solution can be seen in the below diagram, followed by the explanation of key events.
 
-![image](./assets/images/attachment-manager-architecture.png)
+![image](assets/images/cloud_wan_attachment_architecure.jpg)
 
 
 1. In an User Account, a Spoke VPC is attached to a shared Cloud WAN edge location. By default, the attachment is moved to a quarantine segment.
@@ -83,6 +84,14 @@ prod:
     - "IP ADDRESS SUMMARIES ACCEPTABLE FOR THE SEGMENT AND REGION..."
 ```
 
+### AWS Services used  in this Guidance
+
+| **AWS service**  | Role | Description |
+|-----------|------------|------------|
+|[Amazon Cloud WAN](https://aws.amazon.com/cloud-wan/)| Core service | Networking Edge location and VPPC attachment tag|
+|[AWS Lambda](https://aws.amazon.com/lambda/) | Core service| Processes security log events in CloudWatch logs to package tthem into ASFF format for Security Hub |
+| [Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/) | Core service| Used as an event processor and also need to govern scale-out. |
+| [Amazon Simple Notification Service (Amazon SNS)](https://aws.amazon.com/sns) | Core service| Provides topic for an atttachment event message and further processing  |
 
 ### Cost (TODO)
 
