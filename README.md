@@ -88,32 +88,25 @@ prod:
 
 | **AWS service**  | Role | Description |
 |-----------|------------|------------|
-|[Amazon Cloud WAN](https://aws.amazon.com/cloud-wan/)| Core service | Networking Edge location and VPPC attachment tag|
-|[AWS Lambda](https://aws.amazon.com/lambda/) | Core service| Processes security log events in CloudWatch logs to package tthem into ASFF format for Security Hub |
+|[Amazon Cloud WAN](https://aws.amazon.com/cloud-wan/)| Core service | Networking Edge location and VPC attachment tag|
+|[AWS Lambda](https://aws.amazon.com/lambda/) | Core service| Processes security log events in CloudWatch logs to package them into ASFF format for Security Hub |
 | [Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/) | Core service| Used as an event processor and also need to govern scale-out. |
 | [Amazon Simple Notification Service (Amazon SNS)](https://aws.amazon.com/sns) | Core service| Provides topic for an atttachment event message and further processing  |
 
-### Cost (TODO)
+### Cost
 
-This section is for a high-level cost estimate. Think of a likely straightforward scenario with reasonable assumptions based on the problem the Guidance is trying to solve. If applicable, provide an in-depth cost breakdown table in this section.
-
-Start this section with the following boilerplate text:
-
-_You are responsible for the cost of the AWS services used while running this Guidance. As of <month> <year>, the cost for running this Guidance with the default settings in the <Default AWS Region (Most likely will be US East (N. Virginia)) > is approximately $<n.nn> per month for processing ( <nnnnn> records )._
-
-Replace this amount with the approximate cost for running your Guidance in the default Region. This estimate should be per month and for processing/serving resonable number of requests/entities.
-
-Suggest you keep this boilerplate text:
-_We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance._
+You are responsible for the cost of the AWS services used while running this Guidance. As of June 2024, the cost for running this Guidance with  AWS Region  US East (N. Virginia) is approximately $ 1788.52 per month for processing (1000 records per month).
 
 The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
 
 | AWS service  | Dimensions | Cost [USD] |
 | ----------- | ------------ | ------------ |
-| Amazon API Gateway | 1,000,000 REST API calls per month  | $ 3.50month |
-| Amazon Cognito | 1,000 active users per month without advanced security feature | $ 0.00 |
+| [Amazon Cloud WAN](https://aws.amazon.com/cloud-wan/) | 20 attachments per region & 10 Transit Gateway peering connections  | $ 1,788.52  per month |
+| [AWS Lambda](https://aws.amazon.com/lambda/) | 1,000 active requests per month  | $ 0.00 |
+| [Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/)| 1,000 active requests per month  | $ 0.00 |
+| [Amazon Simple Notification Service (Amazon SNS)](https://aws.amazon.com/sns) | 1,000 active requests per month  | $ 0.00 |
 
-
+We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance
 
 ## Prerequisites
 
