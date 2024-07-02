@@ -426,7 +426,7 @@ Successfully created/updated stack - cloudwan-attachment-manager-secondary in us
 
 ## Running the Guidance
 
-Once the Guidance has been deployed , when the user creates a spoke VPC in a user account , you can see that the VPC is automatically associated with the correct segment in the Cloud WAN core network if it adheres to the IP addressing plan. VPC which doesnot follow the business requirements , it will be associated with quarantine segment which prevents any communication with other networks.   
+Once the Guidance has been deployed , when the user creates a spoke VPC in a user account , you can see that the VPC is automatically associated with the correct segment in the Cloud WAN core network if it adheres to the IP addressing plan. If the spoke VPC created  doesnot adhere the business requirements , it will be automatically associated with quarantine segment which prevents any communication with other networks.   
 
 
 ## Cleanup
