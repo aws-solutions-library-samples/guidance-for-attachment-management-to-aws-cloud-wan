@@ -15,11 +15,10 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
 4. [Deployment Steps](#deployment-steps)
 5. [Deployment Validation](#deployment-validation)
 6. [Running the Guidance](#running-the-guidance)
-7. [Next Steps](#next-steps)
-8. [Cleanup](#cleanup)
-9. [Notices](#notices)
-10. [Contributing](#contributing)
-11. [Authors](#authors)
+7. [Cleanup](#cleanup)
+8. [Notices](#notices)
+9. [Contributing](#contributing)
+10. [Authors](#authors)
 
 
 ## Overview
@@ -425,22 +424,9 @@ Successfully created/updated stack - cloudwan-attachment-manager-secondary in us
 ```
 
 
-## Running the Guidance (TODO)
+## Running the Guidance
 
-<Provide instructions to run the Guidance with the sample data or input provided, and interpret the output received.> 
-
-This section should include:
-
-* Guidance inputs
-* Commands to run
-* Expected output (provide screenshot if possible)
-* Output description
-
-
-
-## Next Steps (TOD)
-
-Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
+Once the Guidance has been deployed , when the user creates a spoke VPC in a user account , you can see that the VPC is automatically associated with the correct segment in the Cloud WAN core network if it adheres to the IP addressing plan. VPC which doesnot follow the business requirements , it will be associated with quarantine segment which prevents any communication with other networks.   
 
 
 ## Cleanup
