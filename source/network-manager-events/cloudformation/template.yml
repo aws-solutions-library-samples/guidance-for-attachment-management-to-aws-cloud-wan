@@ -13,6 +13,21 @@ Parameters:
     Description: "Name for the Network Manager Global Network to be created"
     Type: String
 
+  LoggingLevel:
+    Description: "Logging verbosity of the Lambda function"
+    Type: String
+    AllowedValues:
+      - "WARN"
+      - "INFO"
+      - "DEBUG"
+    Default: "WARN"
+
+  LogRetentionInDays:
+    Description: "Number of days to retain the Lambda function logs"
+    Type: Number
+    Default: 30
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653]
+
 Resources:
   
   SnsNetworkEvents:
@@ -63,7 +78,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: AssociateTgwRouteTablePolicyIAMCompanion
+        - PolicyName: NetworkManagerEventsPublish
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -78,13 +93,20 @@ Resources:
       FunctionName: !Sub "network-manager-events-${Name}"
       CodeUri: ../lambda/sns_publish_attributes
       Handler: lambda_handler.handler
-      Runtime: python3.12
+      Runtime: python3.14
       Timeout: 300
       Role: !GetAtt NetworkEventsProcessingLambdaFunctionRole.Arn
       Environment:
         Variables:
           SNS_TOPIC_ARN: !GetAtt SnsNetworkEvents.TopicArn
-  
+          LOGGING_LEVEL: !Ref LoggingLevel
+
+  NetworkEventsProcessingLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${NetworkEventsProcessingLambdaFunction}"
+      RetentionInDays: !Ref LogRetentionInDays
+
   NetworkEventsRule:
     Type: AWS::Events::Rule
     Properties:
