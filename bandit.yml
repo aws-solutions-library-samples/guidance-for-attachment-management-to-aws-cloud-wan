@@ -1,0 +1,10 @@
+exclude_dirs:
+  - "**/tests/*"
+  - "**/docs/*"
+  - "**/.venv/*"
+  - "**/.terraform/*"
+
+# list skipped tests here:
+skips:
+  # pytest terraform testing
+  - B602 # [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified, security issue.

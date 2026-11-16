@@ -1,0 +1,25 @@
+# Development and CI tooling for the whole repository (see README "Annex A — Development tooling").
+# The Lambda deployment packages only use source/<component>/lambda/<name>/requirements.txt.
+#   pip install -r requirements.txt
+
+# Lambda runtime dependencies (for the unit tests)
+boto3
+pyyaml
+
+# Tests
+pytest
+pytest-env
+pytest-order
+syrupy
+terraform-snapshot-test
+
+# Static analysis, linting and security
+bandit
+cfn-lint
+checkov
+isort
+mypy
+pylint
+pre-commit
+types-python-dateutil
+types-PyYAML

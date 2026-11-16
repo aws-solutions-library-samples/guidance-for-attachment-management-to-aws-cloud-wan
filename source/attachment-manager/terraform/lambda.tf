@@ -17,7 +17,14 @@ module "lambda_routing_config_on_demand" {
 
   # Source directory is packaged on first deploy. Pass lambda_routing_config_local_package
   # to skip packaging and deploy a pre-built artefact (e.g. for environment promotion).
-  source_path            = "${path.module}/../lambda/attachment_manager"
+  # The address map is generated per module instance (outside the shared module
+  # directory) and added to the root of the package.
+  source_path = concat(
+    # pip_requirements must be explicit with the map form (the string form detects
+    # requirements.txt automatically): pyyaml isn't part of the Lambda runtime.
+    [{ path = "${path.module}/../lambda/attachment_manager", pip_requirements = true }],
+    var.vpc_segment_address_map == null ? [] : [{ path = local.address_map_dir }],
+  )
   local_existing_package = var.lambda_routing_config_local_package == null ? null : var.lambda_routing_config_local_package
 
   # hash_extra ensures a unique content hash when the same source directory is
@@ -85,33 +92,38 @@ module "lambda_routing_config_on_demand" {
   depends_on = [local_file.vpc_segment_address_map]
 }
 
-# When vpc_segment_address_map is provided, serialize it as YAML and place it
-# inside the Lambda source directory so it gets bundled into the deployment package.
-# The file path matches the SEGMENT_ADDRESSING_FILE environment variable above.
-resource "local_file" "vpc_segment_address_map" {
-  count    = var.vpc_segment_address_map == null ? 0 : 1
-  filename = "${path.module}/../lambda/attachment_manager/vpc_segment_address_map.yml"
-  content  = yamlencode(var.vpc_segment_address_map)
+locals {
+  # One directory per module instance, so that several instances (e.g. a primary
+  # and a secondary region) never share, overwrite or delete each other's map.
+  address_map_dir = "${path.root}/builds/${var.name}_${data.aws_region.current.region}_address_map"
 }
 
-
-# Grants SQS the permission to invoke the Lambda function when new messages
-# arrive on the main queue.
-resource "aws_lambda_permission" "allow_sqs" {
-  region        = data.aws_region.current.region
-  statement_id  = "AllowExecutionFromSQS"
-  action        = "lambda:InvokeFunction"
-  function_name = module.lambda_routing_config_on_demand.lambda_function_arn
-  principal     = "sqs.amazonaws.com"
-  source_arn    = aws_sqs_queue.cloudwan_tag.arn
+# When vpc_segment_address_map is provided, serialize it as YAML into the
+# instance directory, which is bundled at the root of the deployment package.
+# The file name matches the SEGMENT_ADDRESSING_FILE environment variable above.
+resource "local_file" "vpc_segment_address_map" {
+  count           = var.vpc_segment_address_map == null ? 0 : 1
+  filename        = "${local.address_map_dir}/vpc_segment_address_map.yml"
+  content         = yamlencode(var.vpc_segment_address_map)
+  file_permission = "0644"
 }
 
 # Event source mapping that polls the SQS queue and invokes the Lambda
 # automatically when messages are available. SQS handles long-polling,
-# batching, and visibility management.
+# batching, and visibility management. The mapping polls with the Lambda
+# execution role, so no resource-based invoke permission is needed.
 resource "aws_lambda_event_source_mapping" "attachment_created" {
   region                  = data.aws_region.current.region
   event_source_arn        = aws_sqs_queue.cloudwan_tag.arn
   function_name           = module.lambda_routing_config_on_demand.lambda_function_arn
   function_response_types = ["ReportBatchItemFailures"]
+
+  # Limits concurrency at the poller instead of throttling the function: throttled
+  # receives would count towards maxReceiveCount and move messages to the DLQ.
+  dynamic "scaling_config" {
+    for_each = var.lambda_sqs_maximum_concurrency == null ? [] : [var.lambda_sqs_maximum_concurrency]
+    content {
+      maximum_concurrency = scaling_config.value
+    }
+  }
 }

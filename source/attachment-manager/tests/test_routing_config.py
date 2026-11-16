@@ -16,6 +16,7 @@ from test_configuration_events import (
     full_return_segment,
     global_network_id,
     regional_full_return_segment,
+    regional_full_return_segment_by_region,
     route_nok_event_ip,
     route_nok_event_tag,
     route_ok,
@@ -1093,6 +1094,183 @@ def test_resolve_full_return_segment() -> None:
     assert resolve_full_return_segment("us-east-1", "fullreturn", by_region) == "fullreturn"
     assert resolve_full_return_segment("eu-west-2", "", by_region) is None
     assert resolve_full_return_segment("eu-west-2", None, None) is None
+
+
+# ─── Regional inspection segments without a global full return segment ──────
+
+
+@pytest.mark.aws_lambdas
+def test_process_cloudwan_event_regional_inspection_without_full_return() -> None:
+    """No global full return segment: the regional inspection segment of the edge is queried for conflicts."""
+    assert process_cloudwan_event(
+        boto3_client_dict={
+            "sts": init_boto3_stubber("sts", [sts_assume_role_org_reader]),
+            "organizations": init_boto3_stubber("organizations", [org_list_tags_for_resource_222222222222]),
+            "networkmanager": init_boto3_stubber(
+                "networkmanager",
+                [
+                    nm_get_vpc_attachment_00000000000000002,
+                    nm_get_network_routes_route_ok_regional_full_return_supernet_00000000000000002,
+                    nm_get_network_routes_route_ok_regional_full_return_subnet_00000000000000002,
+                    nm_get_network_routes_route_ok_quarantineroutes_supernet_00000000000000002,
+                    nm_get_network_routes_route_ok_quarantineroutes_subnet_00000000000000002,
+                    nm_tag_vpc_attachment_00000000000000002,
+                ],
+            ),
+        },
+        configuration_event=route_ok,
+        global_network_id=global_network_id,
+        full_return_segment="",
+        full_return_segment_by_region=regional_full_return_segment_by_region,
+        perform_deletions=True,
+        vpc_address_mapping=vpc_address_mapping,
+    ) == {
+        "unhandled_event": False,
+        "retry_event": False,
+    }
+
+
+@pytest.mark.aws_lambdas
+def test_process_cloudwan_event_region_missing_from_regional_map_skips_conflict_check(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """No global full return segment and no entry for the edge: the conflict check is skipped (and logged)."""
+    with caplog.at_level("WARNING"):
+        assert process_cloudwan_event(
+            boto3_client_dict={
+                "sts": init_boto3_stubber("sts", [sts_assume_role_org_reader]),
+                "organizations": init_boto3_stubber("organizations", [org_list_tags_for_resource_222222222222]),
+                "networkmanager": init_boto3_stubber(
+                    "networkmanager",
+                    [
+                        nm_get_vpc_attachment_00000000000000002,
+                        nm_tag_vpc_attachment_00000000000000002,
+                    ],
+                ),
+            },
+            configuration_event=route_ok,
+            global_network_id=global_network_id,
+            full_return_segment="",
+            full_return_segment_by_region={"eu-west-2": "inspectioneuw2"},
+            perform_deletions=True,
+            vpc_address_mapping=vpc_address_mapping,
+        ) == {
+            "unhandled_event": False,
+            "retry_event": False,
+        }
+    assert "[SKIP_CONFLICT_CHECK=NO_FULL_RETURN_SEGMENT attachment-00000000000000002]" in caplog.text
+
+
+@pytest.mark.aws_lambdas
+def test_handler_regional_inspection_without_full_return(monkeypatch: pytest.MonkeyPatch) -> None:
+    """handler() reads FULL_RETURN_TABLE_BY_REGION (JSON) with an empty FULL_RETURN_TABLE."""
+    monkeypatch.setenv("MANAGED_GLOBAL_NETWORK_ID", global_network_id)
+    monkeypatch.setenv("PERFORM_ATTACHMENT_DELETIONS", "true")
+    monkeypatch.setenv("SEGMENT_ADDRESSING_FILE", "tests/vpc_segment_address_map.yml")
+    monkeypatch.setenv("FULL_RETURN_TABLE", "")
+    monkeypatch.setenv("FULL_RETURN_TABLE_BY_REGION", json.dumps(regional_full_return_segment_by_region))
+
+    boto3_client_dict = {
+        "sts": init_boto3_stubber("sts", [sts_assume_role_org_reader]),
+        "organizations": init_boto3_stubber("organizations", [org_list_tags_for_resource_222222222222]),
+        "networkmanager": init_boto3_stubber(
+            "networkmanager",
+            [
+                nm_get_vpc_attachment_00000000000000002,
+                nm_get_network_routes_route_ok_regional_full_return_supernet_00000000000000002,
+                nm_get_network_routes_route_ok_regional_full_return_subnet_00000000000000002,
+                nm_get_network_routes_route_ok_quarantineroutes_supernet_00000000000000002,
+                nm_get_network_routes_route_ok_quarantineroutes_subnet_00000000000000002,
+                nm_tag_vpc_attachment_00000000000000002,
+            ],
+        ),
+    }
+
+    result = handler(_make_sqs_event(route_ok), context=None, boto3_client_dict=boto3_client_dict)
+    assert result == {"batchItemFailures": []}
+
+
+# ─── Account filtering with several attachments per route ───────────────────
+
+
+@pytest.mark.aws_lambdas
+def test_process_route_event_ignored_attachment_does_not_skip_other_attachments() -> None:
+    """An attachment from an ignored account must not stop the evaluation of the other attachments of the route."""
+    route = dict(route_ok["routes"][0])
+    route["attachments"] = [
+        {"attachmentId": "attachment-00000000000000003", "attachmentType": "vpc"},
+        {"attachmentId": "attachment-00000000000000002", "attachmentType": "vpc"},
+    ]
+    assert process_route_event(
+        boto3_client_dict={
+            "sts": init_boto3_stubber("sts", [sts_assume_role_org_reader]),
+            "organizations": init_boto3_stubber("organizations", [org_list_tags_for_resource_222222222222]),
+            "networkmanager": init_boto3_stubber(
+                "networkmanager",
+                [
+                    nm_get_vpc_attachment_00000000000000003,
+                    nm_get_vpc_attachment_00000000000000002,
+                    nm_get_network_routes_route_ok_full_return_supernet_00000000000000002,
+                    nm_get_network_routes_route_ok_full_return_subnet_00000000000000002,
+                    nm_get_network_routes_route_ok_quarantineroutes_supernet_00000000000000002,
+                    nm_get_network_routes_route_ok_quarantineroutes_subnet_00000000000000002,
+                    nm_tag_vpc_attachment_00000000000000002,
+                ],
+            ),
+        },
+        route=route,
+        global_network_id=global_network_id,
+        core_network_arn=core_network_arn,
+        full_return_segment=full_return_segment,
+        perform_deletions=True,
+        vpc_address_mapping=vpc_address_mapping,
+        attachment_type=["vpc"],
+        ignore_aws_accounts=["333333333333"],
+    ) == {
+        "unhandled_event": False,
+        "retry_event": False,
+        "action": "tag attachment to nonprod",
+    }
+
+
+@pytest.mark.aws_lambdas
+def test_process_route_event_non_listed_attachment_does_not_skip_other_attachments() -> None:
+    """An attachment outside process_only_aws_accounts must not stop the evaluation of the listed ones."""
+    route = dict(route_ok["routes"][0])
+    route["attachments"] = [
+        {"attachmentId": "attachment-00000000000000003", "attachmentType": "vpc"},
+        {"attachmentId": "attachment-00000000000000002", "attachmentType": "vpc"},
+    ]
+    assert process_route_event(
+        boto3_client_dict={
+            "sts": init_boto3_stubber("sts", [sts_assume_role_org_reader]),
+            "organizations": init_boto3_stubber("organizations", [org_list_tags_for_resource_222222222222]),
+            "networkmanager": init_boto3_stubber(
+                "networkmanager",
+                [
+                    nm_get_vpc_attachment_00000000000000003,
+                    nm_get_vpc_attachment_00000000000000002,
+                    nm_get_network_routes_route_ok_full_return_supernet_00000000000000002,
+                    nm_get_network_routes_route_ok_full_return_subnet_00000000000000002,
+                    nm_get_network_routes_route_ok_quarantineroutes_supernet_00000000000000002,
+                    nm_get_network_routes_route_ok_quarantineroutes_subnet_00000000000000002,
+                    nm_tag_vpc_attachment_00000000000000002,
+                ],
+            ),
+        },
+        route=route,
+        global_network_id=global_network_id,
+        core_network_arn=core_network_arn,
+        full_return_segment=full_return_segment,
+        perform_deletions=True,
+        vpc_address_mapping=vpc_address_mapping,
+        attachment_type=["vpc"],
+        process_only_aws_accounts=["222222222222"],
+    ) == {
+        "unhandled_event": False,
+        "retry_event": False,
+        "action": "tag attachment to nonprod",
+    }
 
 
 # ─── YAML address map validation ────────────────────────────────────────────

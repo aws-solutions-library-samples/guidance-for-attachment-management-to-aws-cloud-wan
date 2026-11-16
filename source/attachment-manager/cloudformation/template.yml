@@ -103,8 +103,23 @@ Parameters:
     Type: String
     Default: ""
 
+  SqsMaximumConcurrency:
+    Description: "Maximum concurrent Lambda invocations started by the SQS event source mapping (2-1000). 0 means no limit. Use it instead of reserved concurrency: throttled receives count towards the DLQ redrive"
+    Type: Number
+    Default: 0
+    MinValue: 0
+    MaxValue: 1000
+
+Rules:
+  SqsMaximumConcurrencyRange:
+    RuleCondition: !Not [!Equals [!Ref SqsMaximumConcurrency, 0]]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref SqsMaximumConcurrency, 1]]
+        AssertDescription: "SqsMaximumConcurrency must be 0 (no limit) or between 2 and 1000"
+
 Conditions:
   HasDlqAlarmTopic: !Not [!Equals [!Ref DlqAlarmSnsTopicArn, ""]]
+  HasSqsMaximumConcurrency: !Not [!Equals [!Ref SqsMaximumConcurrency, 0]]
 
 Resources:
 
@@ -113,6 +128,9 @@ Resources:
     Properties:
       QueueName: !Join ["-", [!Ref Name, "dlq"]]
       SqsManagedSseEnabled: true
+      # 14 days: for standard queues the retention counts from the original
+      # enqueue time, so the default (4 days) could expire messages early.
+      MessageRetentionPeriod: 1209600
 
   CloudWanEventsSqs:
     Type: AWS::SQS::Queue
@@ -214,15 +232,6 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${SegmentControlLambdaFunction}"
       RetentionInDays: !Ref LogRetentionInDays
 
-  SegmentControlLambdaSqsPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: "lambda:InvokeFunction"
-      FunctionName: !GetAtt SegmentControlLambdaFunction.Arn
-      Principal: "sqs.amazonaws.com"
-      SourceAccount: !Ref AWS::AccountId
-      SourceArn: !GetAtt CloudWanEventsSqs.Arn
-
   SegmentControlLambdaSqsEventMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
@@ -231,6 +240,11 @@ Resources:
       # Attachments that are not ready yet are handed back to SQS individually
       FunctionResponseTypes:
         - ReportBatchItemFailures
+      # Limits concurrency at the poller instead of throttling the function
+      ScalingConfig: !If
+        - HasSqsMaximumConcurrency
+        - MaximumConcurrency: !Ref SqsMaximumConcurrency
+        - !Ref "AWS::NoValue"
 
   CloudWanEventsSqsSubscriptionToSns:
     Type: AWS::SNS::Subscription

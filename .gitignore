@@ -211,3 +211,7 @@ dmypy.json
 # Terraform lambda module build artefacts & snapshot test temporary plans
 **/builds/
 **/__snapshots__/_*.json
+
+# Claude Code: personal settings and local state (CLAUDE.md is published)
+.claude/settings.local.json
+CLAUDE.local.md

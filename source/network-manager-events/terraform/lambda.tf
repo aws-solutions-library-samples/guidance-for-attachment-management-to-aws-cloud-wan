@@ -9,6 +9,11 @@
 #
 # Source: https://registry.terraform.io/modules/terraform-aws-modules/lambda/aws
 
+locals {
+  # A single sns:Publish call: 30 s leaves ample headroom for SNS latency.
+  lambda_timeout = 30
+}
+
 #checkov:skip=CKV_TF_1:"Ensure Terraform module sources use a commit hash"
 module "lambda_network_events_sns_publish" {
   source  = "terraform-aws-modules/lambda/aws"
@@ -33,9 +38,16 @@ module "lambda_network_events_sns_publish" {
   # CloudWatch log retention mirrors the module-level variable.
   cloudwatch_logs_retention_in_days = var.cloudwatch_logs_retention_in_days
 
-  # 15-minute ceiling — Network Manager events are low-volume; this upper bound
-  # is intentionally generous to guard against transient SNS publish latency.
-  timeout = 900
+  timeout = local.lambda_timeout
+
+  # Asynchronous (EventBridge) invocations are retried twice by Lambda. When a
+  # failure destination is set, events that still fail are sent there instead
+  # of being dropped silently.
+  create_async_event_config    = var.lambda_destination_on_failure_arn != null
+  attach_async_event_policy    = var.lambda_destination_on_failure_arn != null
+  maximum_retry_attempts       = 2
+  maximum_event_age_in_seconds = 3600
+  destination_on_failure       = var.lambda_destination_on_failure_arn
 
   # Attach the inline IAM policy granting sns:Publish on the topic created below.
   attach_policy_json = true

@@ -20,6 +20,14 @@ This Guidance builds an augmented approach of managing [AWS Cloud WAN](https://a
 9. [Notices](#notices)
 10. [Contributing](#contributing)
 11. [Authors](#authors)
+12. [Annex A — Development tooling](#annex-a--development-tooling)
+    - [Versioning and changelog](#versioning-and-changelog)
+    - [Pre-commit hooks](#pre-commit-hooks)
+    - [Security scan (bandit)](#security-scan-bandit)
+    - [Lambda unit tests](#lambda-unit-tests)
+    - [Terraform module tests](#terraform-module-tests)
+    - [Plan snapshot tests and account ID masking](#plan-snapshot-tests-and-account-id-masking)
+    - [SAM template lint](#sam-template-lint)
 
 
 ## Overview
@@ -137,6 +145,8 @@ brew install aws-sam-cli awscli
 
 
 [Terraform](https://www.terraform.io/) (or [OpenTofu](https://opentofu.org/)) modules are also available in this repository, but will not be covered in this example. See the [Network Manager Events](source/network-manager-events/terraform/README.md) and [Attachment Manager](source/attachment-manager/terraform/README.md) module documentation.
+
+> **Note:** only the Terraform / OpenTofu modules have been deployed and tested end to end. The SAM / CloudFormation templates are provided on a best-effort basis, mirroring what is configured in the Terraform modules.
 
 
 ### AWS account requirements
@@ -326,6 +336,8 @@ This solution is composed of two types of stacks, with the following regional re
 
 ## Deployment Steps
 
+> **Note:** only the Terraform / OpenTofu modules have been deployed and tested end to end. The SAM / CloudFormation templates are provided on a best-effort basis, mirroring what is configured in the Terraform modules.
+
 1. Deploy the 'Network Manager Event Processor' stack:
 
 
@@ -441,7 +453,7 @@ Successfully created/updated stack - cloudwan-attachment-manager-secondary in us
 
 ## Running the Guidance
 
-Once the Guidance has been deployed , when the user creates a spoke VPC in a user account , you can see that the VPC is automatically associated with the correct segment in the Cloud WAN core network if it adheres to the IP addressing plan. If the spoke VPC created  doesnot adhere the business requirements , it will be automatically associated with quarantine segment which prevents any communication with other networks.   
+Once the Guidance has been deployed , when the user creates a spoke VPC in a user account , you can see that the VPC is automatically associated with the correct segment in the Cloud WAN core network if it adheres to the IP addressing plan. If the spoke VPC created  doesnot adhere the business requirements , it will be automatically associated with quarantine segment which prevents any communication with other networks.
 
 
 ## Cleanup
@@ -492,6 +504,8 @@ tofu init -backend=false
 tofu test -test-directory=tests
 ```
 
+The pre-commit hooks, security scans, plan snapshot tests and account ID masking are described in [Annex A — Development tooling](#annex-a--development-tooling).
+
 
 ## Notices
 
@@ -512,3 +526,118 @@ See [CONTRIBUTING](CONTRIBUTING.md) for more information.
 
 - João Rodrigues, Senior Cloud Infrastructure Architect, AWS
 - Srivalsan Mannoor Sudhagar, Cloud Infrastructure Architect, AWS
+
+### Maintainer
+
+The 2.0.0 update (Terraform / OpenTofu modules, regional inspection segments, development tooling) was made, and is maintained, by:
+
+- João Rodrigues — [jrodrigues@empirikon.co.uk](mailto:jrodrigues@empirikon.co.uk), [Empirikon Systems](https://empirikon.co.uk)
+
+
+## Annex A — Development tooling
+
+This annex describes the tooling used to develop and validate this Guidance. None of it is needed to deploy the solution.
+
+The 2.0.0 update was developed with the assistance of [Claude Code](https://claude.com/claude-code) and reviewed by the maintainer. [`CLAUDE.md`](CLAUDE.md) holds the project guidance it works from, and commits made with it carry a `Co-Authored-By: Claude` trailer.
+
+| Tool | Configuration | What it checks |
+|------|---------------|----------------|
+| [pip](https://pip.pypa.io/) | [`requirements.txt`](requirements.txt) | All the development tooling below |
+| [pre-commit](https://pre-commit.com/) | [`.pre-commit-config.yaml`](.pre-commit-config.yaml) | Runs every check below on each commit |
+| [bandit](https://bandit.readthedocs.io/) | [`bandit.yml`](bandit.yml) | Security issues in the Lambda code |
+| [cfn-lint](https://github.com/aws-cloudformation/cfn-lint) | pre-commit hook | SAM / CloudFormation templates |
+| [pytest](https://docs.pytest.org/) | `source/<component>/pytest.ini` | Lambda unit tests (botocore Stubbers, no AWS calls) |
+| [OpenTofu tests](https://opentofu.org/docs/cli/commands/test/) | `source/<component>/terraform/tests/*.tftest.hcl` | Terraform module behaviour, mocked providers |
+| [terraform-snapshot-test](https://github.com/joaorodrig/terraform-snapshot-test) + [syrupy](https://github.com/syrupy-project/syrupy) | `source/<component>/terraform/pytest.ini` | Plan snapshots of the Terraform modules |
+| [`deployment/snapshot_account_ids.py`](deployment/snapshot_account_ids.py) | pre-commit hook + snapshot tests | No real AWS account IDs in the snapshots |
+
+Install all the development tooling with `pip install -r requirements.txt` (repository root: test, lint, security and pre-commit tools). The per-component `source/<component>/requirements-dev.txt` files are enough to run that component's tests. The OpenTofu hooks and tests also need [OpenTofu](https://opentofu.org/docs/intro/install/) (`tofu`) on the `PATH`.
+
+### Versioning and changelog
+
+The Guidance version is in [`VERSION`](VERSION) (`MAJOR.MINOR.PATCH`, enforced by the `version-is-semver` hook), and the changes are listed in [`CHANGELOG.md`](CHANGELOG.md). Bump both in the same change:
+- **MAJOR**: breaking change for deployed stacks or module callers (removed or renamed inputs, changed resource names).
+- **MINOR**: new feature or input, backwards compatible.
+- **PATCH**: bug fix or documentation only.
+
+### Pre-commit hooks
+
+```
+pip install -r requirements.txt
+pre-commit install            # installs the pre-commit and commit-msg hooks
+pre-commit run --all-files    # runs every hook on the whole repository
+```
+
+| Hook | Purpose |
+|------|---------|
+| `pre-commit-hooks` | Large files, merge conflicts, JSON / YAML syntax (`--unsafe` for the CloudFormation tags), AWS credentials and private keys, trailing whitespace, end of file, LF line endings |
+
+The files managed by the aws-solutions-library-samples maintainers (`.github/`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `LICENSE`, `CODEOWNERS`) are excluded from every hook.
+| `gitleaks` | Secrets (tokens, keys) in the staged changes |
+| `bandit` | Python security scan, see below |
+| `cfn-lint` | `source/*/cloudformation/template.yml` |
+| `version-is-semver` | `VERSION` is `MAJOR.MINOR.PATCH` |
+| `solution-id` | The SAM template descriptions keep the solution ID `SO9490`, which the maintainer workflow (`.github/workflows/maintainer_workflows.yml`) looks for |
+| `snapshot-account-ids` | Plan snapshots contain no real AWS account IDs, see below |
+| `tofu-fmt` | OpenTofu formatting of `.tf` and `.tftest.hcl` files |
+| `gitlint` | Commit message style (commit-msg stage) |
+
+### Security scan (bandit)
+
+```
+bandit -c bandit.yml -r source deployment
+```
+
+[`bandit.yml`](bandit.yml) excludes the test directories, `.venv` and `.terraform`, and skips `B602` (`subprocess` with `shell=True`), which the plan snapshot tooling uses to run `tofu`.
+
+### Lambda unit tests
+
+```
+cd source/attachment-manager        # or source/network-manager-events
+pip install -r requirements-dev.txt
+pytest
+pytest tests/test_ipv6.py           # attachment manager: IPv6 (dual-stack VPC) cases
+
+# type checks (boto3 ships no type stubs)
+MYPYPATH=lambda/attachment_manager mypy --ignore-missing-imports -p lambda_handler -p aws_utils -p local_utils
+MYPYPATH=lambda/sns_publish_attributes mypy --ignore-missing-imports -p lambda_handler   # network manager events
+```
+
+Every AWS call is served by a [botocore Stubber](https://botocore.amazonaws.com/v1/documentation/api/latest/reference/stubber.html) (`tests/test_mocked_*_calls.py`), so the tests need no credentials and check the exact API parameters, for example the segment queried for conflicting routes.
+
+### Terraform module tests
+
+```
+cd source/attachment-manager/terraform   # or source/network-manager-events/terraform
+tofu init -backend=false
+tofu test -test-directory=tests
+```
+
+The tests use `mock_provider` blocks: no credentials and no AWS resources. The attachment manager tests cover a full deployment, a minimal deployment, regional inspection segments without a `fullreturn` segment, and the input validations. The network manager events tests cover naming, security properties, the us-west-2 check, the Lambda timeout and the failure destination.
+
+### Plan snapshot tests and account ID masking
+
+The snapshot tests run a real `tofu plan` of `tests/test_snapshot.tf` (with `tests/test_provider_snapshot.tf`) and compare the generated configuration and planned values with the JSON files committed in `tests/__snapshots__/`. Any change in what the modules would deploy then shows up as a reviewable diff.
+
+```
+cd source/attachment-manager/terraform   # or source/network-manager-events/terraform
+pytest -m terraform                      # compare with the committed snapshots
+pytest -m terraform --snapshot-update    # regenerate after an intentional change
+```
+
+How it works: [terraform-snapshot-test on GitHub](https://github.com/joaorodrig/terraform-snapshot-test), [on PyPI](https://pypi.org/project/terraform-snapshot-test/), and the blog post [Terraform snapshot testing: a practical guide](https://empirikon.co.uk/blog/terraform-snapshot-testing-a-practical/).
+
+`tofu plan` needs AWS credentials, because the modules read `data.aws_caller_identity`, so the plan contains the account ID of whoever runs it. To keep real account IDs out of this repository:
+1. Both snapshot tests mask the plan with `mask_account_ids()` from [`deployment/snapshot_account_ids.py`](deployment/snapshot_account_ids.py) before comparing it, or writing it with `--snapshot-update`. Every 12-digit number that isn't a mock ID (`000000000000`, `111111111111`, …, `123456789012`) becomes `111111111111`, so the tests pass whichever account runs them.
+2. The `snapshot-account-ids` pre-commit hook (`python deployment/snapshot_account_ids.py --check <files>`) rejects any snapshot that still contains a non-mock account ID.
+3. `python deployment/snapshot_account_ids.py <files>` masks existing snapshot files in place.
+
+The temporary plan files (`tests/__snapshots__/_*`) and the Lambda build artefacts (`builds/`) are git-ignored.
+
+### SAM template lint
+
+```
+cfn-lint source/*/cloudformation/template.yml
+```
+
+The SAM templates mirror the Terraform modules on a best-effort basis: only the Terraform modules have been deployed and tested end to end. Keep both in sync when changing infrastructure behaviour (environment variables, IAM, queue settings, SNS filter).

@@ -1,4 +1,6 @@
 import ipaddress
+import json
+import logging
 import re
 from typing import Any, Optional
 
@@ -6,6 +8,8 @@ import yaml
 
 # Cloud WAN segment names only contain letters and numbers
 SEGMENT_NAME_PATTERN = re.compile(r"^[A-Za-z0-9]+$")
+
+logger = logging.getLogger(__name__)
 
 
 def _validate_address_map(config: Any) -> None:
@@ -58,8 +62,9 @@ def validate_prefix_in_segment(
 
     Checks whether the CIDR falls within any allowed prefix for
     *account_tag* / *edge_region* in *vpc_address_mapping*.  Returns ``True``
-    (allow) when no address mapping is configured or when *account_tag* has no
-    entry in the map (unknown segment — treated as unrestricted).
+    (allow) when no address mapping is configured, when *account_tag* has no
+    entry in the map (unknown segment — treated as unrestricted), or when
+    *route_prefix* is IPv6 (the address plan only covers IPv4).
     """
     if vpc_address_mapping is None:
         return True
@@ -67,8 +72,16 @@ def validate_prefix_in_segment(
         # No address constraints defined for this segment — allow.
         return True
 
+    ipaddr_prefix = ipaddress.ip_network(route_prefix, strict=False)
+    if ipaddr_prefix.version != 4:
+        # The address plan only describes IPv4 ranges: IPv6 prefixes (dual-stack VPCs) are not
+        # validated here. They are still subject to the conflicting-route check.
+        logger.info(
+            json.dumps({"event": "SKIP_ADDRESS_PLAN_CHECK", "reason": "IPV6_PREFIX", "route_prefix": route_prefix})
+        )
+        return True
+
     if edge_region in vpc_address_mapping[account_tag]:
-        ipaddr_prefix = ipaddress.ip_network(route_prefix)
         for allowed_prefix in vpc_address_mapping[account_tag][edge_region]:
             ipaddr_allowed = ipaddress.IPv4Network(allowed_prefix)
             if ipaddr_prefix.network_address in ipaddr_allowed and ipaddr_prefix.broadcast_address in ipaddr_allowed:

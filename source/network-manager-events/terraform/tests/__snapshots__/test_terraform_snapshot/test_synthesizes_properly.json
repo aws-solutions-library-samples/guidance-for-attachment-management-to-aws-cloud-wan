@@ -16,12 +16,27 @@
         "module_calls": {
           "lambda_network_events_sns_publish": {
             "expressions": {
+              "attach_async_event_policy": {
+                "references": [
+                  "var.lambda_destination_on_failure_arn"
+                ]
+              },
               "attach_policy_json": {
                 "constant_value": true
               },
               "cloudwatch_logs_retention_in_days": {
                 "references": [
                   "var.cloudwatch_logs_retention_in_days"
+                ]
+              },
+              "create_async_event_config": {
+                "references": [
+                  "var.lambda_destination_on_failure_arn"
+                ]
+              },
+              "destination_on_failure": {
+                "references": [
+                  "var.lambda_destination_on_failure_arn"
                 ]
               },
               "environment_variables": {
@@ -38,6 +53,12 @@
               },
               "handler": {
                 "constant_value": "lambda_handler.handler"
+              },
+              "maximum_event_age_in_seconds": {
+                "constant_value": 3600
+              },
+              "maximum_retry_attempts": {
+                "constant_value": 2
               },
               "policy_json": {
                 "references": [
@@ -61,7 +82,9 @@
                 ]
               },
               "timeout": {
-                "constant_value": 900
+                "references": [
+                  "local.lambda_timeout"
+                ]
               }
             },
             "module": {
@@ -2939,6 +2962,22 @@
               ]
             }
           },
+          "lambda_destination_on_failure_arn": {
+            "description": "Destination of the failed asynchronous invocations of the publisher Lambda, or null.",
+            "expression": {
+              "references": [
+                "var.lambda_destination_on_failure_arn"
+              ]
+            }
+          },
+          "lambda_timeout": {
+            "description": "Timeout in seconds of the publisher Lambda function.",
+            "expression": {
+              "references": [
+                "local.lambda_timeout"
+              ]
+            }
+          },
           "region_name": {
             "description": "AWS region in which this module's resources were deployed.",
             "expression": {
@@ -3254,8 +3293,8 @@
         ],
         "variables": {
           "cloudwatch_logs_retention_in_days": {
+            "default": 30,
             "description": "Number of days to retain Lambda function log events in CloudWatch Logs. Set to 0 for indefinite retention (not recommended for cost control).",
-            "required": true,
             "type": "number"
           },
           "events_bus_name": {
@@ -3268,14 +3307,19 @@
             "required": true,
             "type": "string"
           },
+          "lambda_destination_on_failure_arn": {
+            "default": null,
+            "description": "ARN of an SQS queue, SNS topic, Lambda function or EventBridge bus that receives the Network Manager events the publisher failed to process (after 2 retries). When null, failed events are only visible in the Lambda logs and Errors metric.",
+            "type": "string"
+          },
           "lambda_logging_level": {
             "default": "WARN",
             "description": "Logging verbosity for the Lambda event processor, passed as the LOGGING_LEVEL environment variable. WARN is appropriate for production. INFO or DEBUG produce significant additional volume and should only be used during active troubleshooting.",
             "type": "string"
           },
           "lambda_runtime": {
-            "default": "python3.13",
-            "description": "Python runtime identifier for the Lambda function (e.g. python3.13, python3.13). Defaults to python3.13. Advance this only after validating the handler code against the new interpreter.",
+            "default": "python3.14",
+            "description": "Python runtime identifier for the Lambda function (e.g. python3.14). Defaults to python3.14. Advance this only after validating the handler code against the new interpreter.",
             "type": "string"
           },
           "region": {

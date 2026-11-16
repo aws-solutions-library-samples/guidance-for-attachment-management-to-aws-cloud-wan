@@ -22,6 +22,9 @@ result to an encrypted SNS topic. Downstream consumers — SQS queues, Lambda
 functions, HTTP endpoints — can then subscribe with attribute-based filter
 policies and receive *only* the events they care about.
 
+
+The events are consumed by the [Cloud WAN Attachment Manager](../../attachment-manager/terraform/) module. The same component can also be deployed with SAM (`../cloudformation/template.yml`), which mirrors this module on a best-effort basis: only the Terraform modules have been deployed and tested end to end.
+
 ---
 
 ## Architecture
@@ -71,6 +74,53 @@ policies and receive *only* the events they care about.
 
 ---
 
+## Lambda execution flow
+
+```
+ EventBridge (us-west-2, source = aws.networkmanager)
+   │  asynchronous invocation (Lambda retries twice, then the optional
+   │  lambda_destination_on_failure_arn)
+   ▼
+ handler
+   │
+   ▼
+ _process_event(event)
+   │
+   ├─ detail.changeType, coreNetworkArn or edgeLocation missing? ──▶ drop
+   │      (global network / TGW / SD-WAN events without a core network)
+   │
+   ├─ *_ATTACHMENT_DELETED / *_PEERING_DELETED / *_CONNECTION_DELETED ──▶ drop
+   │
+   ├─ *_ATTACHMENT_CREATED / *_PEERING_CREATED / *_CONNECTION_CREATED
+   │      ──▶ changeType = "set"        ──▶ publish
+   │
+   ├─ SEGMENT_ROUTE_INSTALLED
+   │      keep routes with at least one typed attachment (once per route)
+   │      no route left, or no segment? ─────────────────────────────▶ drop
+   │      ──▶ changeType = "new_route"  ──▶ publish
+   │
+   └─ anything else (route removals, policy changes, …) ──────────────▶ drop
+
+ publish = sns:Publish(compact JSON body + message attributes:
+           coreNetworkArn · changeType · attachmentRegion · coreUplinkArn · attachmentArn)
+```
+
+Why it matters:
+- **It is the only event source of the attachment manager.** Network Manager only publishes in us-west-2, and SNS fans the events out to attachment managers in any region (cross-region SQS subscriptions). If this Lambda drops an event, the attachment stays in quarantine. That fails closed, so the only cost is a delayed admission, which the next route event usually recovers.
+- **Message attributes let subscribers filter without a Lambda.** Each attachment manager subscribes with an SNS filter policy on `coreUplinkArn`, so a topic shared by several core networks only delivers each network's events to its own queue.
+- **Curating at the source keeps consumers simple and cheap.** Deletions, removals and untyped routes are dropped here. Each route appears once in the message even when several attachments propagate it, so consumers don't process duplicates. The JSON body carries only what the attachment manager needs: `edgeRegion`, `routes`, `segments`.
+- **Unknown or partial events never fail the invocation.** Missing fields return `None` instead of raising, so EventBridge/Lambda don't retry events that can never be processed. Real failures, such as an SNS publish error, raise and are retried twice, then go to the failure destination when one is set.
+
+---
+
+## Important: Deploy in us-west-2
+
+Network Manager is a global service whose home region is **us-west-2**: it only
+publishes its EventBridge events there. Deploy this module in us-west-2 (provider
+region or `region = "us-west-2"`). Anywhere else the EventBridge rule never
+fires; the `network_manager_events_region` check block reports it as a warning
+at plan time.
+
 ## Important: Enable Network Manager Event Monitoring
 
 > **This is a manual step that Terraform cannot perform for you.**
@@ -93,8 +143,6 @@ Reference: https://docs.aws.amazon.com/vpc/latest/tgwnm/monitoring-events.html
 ---
 
 ## Usage
-
-AWS Network Manager publishes its events to Amazon EventBridge in **us-west-2**, so the module must be deployed in that region.
 
 ```hcl
 module "network_manager" {
@@ -228,8 +276,9 @@ The Lambda publishes a JSON message body alongside SNS message attributes.
 | `events_bus_name` | EventBridge bus the rule subscribes to. Override for cross-account event routing. | `string` | `"default"` | no |
 | `lambda_logging_level` | Lambda logger verbosity. One of `WARN`, `INFO`, `DEBUG`. | `string` | `"WARN"` | no |
 | `sns_topic_name` | Override the auto-generated SNS topic name (`networkmanager_events_<name>`). | `string` | `null` | no |
-| `region` | AWS region for the Lambda function. Defaults to the provider region. | `string` | `null` | no |
-| `lambda_runtime` | Python runtime identifier (e.g. `python3.14`). | `string` | `"python3.14"` | no |
+| `region` | AWS region for the resources. Must resolve to `us-west-2` (Network Manager events region). Defaults to the provider region. | `string` | `null` | no |
+| `lambda_destination_on_failure_arn` | SQS queue, SNS topic, Lambda or event bus receiving events that still fail after 2 asynchronous retries. When null, failures only appear in the Lambda logs / `Errors` metric. | `string` | `null` | no |
+| `lambda_runtime` | Python runtime identifier (e.g. `python3.13`, `python3.14`). | `string` | `"python3.14"` | no |
 
 ---
 
@@ -240,10 +289,16 @@ The Lambda publishes a JSON message body alongside SNS message attributes.
 | `global_network_id` | ID of the AWS Network Manager Global Network. |
 | `sns_topic_arn` | ARN of the SNS topic that receives enriched Network Manager events. |
 | `region_name` | AWS region in which the module's resources were deployed. |
+| `lambda_timeout` | Timeout of the publisher Lambda function (30 s). |
+| `lambda_destination_on_failure_arn` | Destination of failed asynchronous invocations, or null. |
 
 ---
 
 ## Development
+
+The repository-wide tooling (pre-commit, bandit, cfn-lint, snapshot masking) is described in the main README, "Annex A — Development tooling".
+
+### Commands
 
 ```bash
 # HCL tests — mocked provider, no AWS credentials required
@@ -259,12 +314,31 @@ pytest -m terraform --snapshot-update   # after an intentional infrastructure ch
 cd source/network-manager-events
 pip install -r requirements-dev.txt
 pytest
+
+# Type-check the Lambda handler (boto3 ships no type stubs)
+MYPYPATH=lambda/sns_publish_attributes mypy --ignore-missing-imports -p lambda_handler
 ```
+
+### Test structure
 
 | Command | What it tests |
 |---------|--------------|
-| `tofu test -test-directory=tests` | HCL tests in `tests/module_tests.tftest.hcl` — resource wiring, naming conventions, security properties, variable validation. |
+| `tofu test -test-directory=tests` (in `terraform/`) | HCL tests in `tests/module_tests.tftest.hcl` — resource wiring, naming conventions, security properties, variable validation, the us-west-2 check, Lambda timeout and failure destination. Uses a mocked AWS provider; no credentials needed. |
 | `pytest -m terraform` (in `terraform/`) | Snapshot tests — run `tofu plan` and compare the plan JSON against the committed snapshots in `tests/__snapshots__/`. |
-| `pytest` (in `source/network-manager-events`) | Python unit tests for the Lambda `_process_event()` function. |
+| `pytest` (in `source/network-manager-events`) | Python unit tests for the Lambda `_process_event()` function — covers all event type branches and edge cases (including events without a core network). |
 
-Review snapshot diffs carefully before committing — unexpected changes in planned values indicate unintended drift, and snapshots must not contain real AWS account IDs.
+### HCL test mocks
+
+The tests mock the `aws` provider only (`mock_provider "aws"`), so they need no credentials and create nothing. The `external` and `null` providers come from the `terraform-aws-modules/lambda` module's packaging and are not mocked:
+- `data.external.archive_prepare` really runs `package.py` at plan time, which only hashes the Lambda sources and writes a build plan under `builds/` (needs `python3`);
+- `null_resource.archive`, which builds the zip, only runs at apply, and every run is `command = plan`.
+
+The mocked `aws_region` returns us-west-2. The `warn_when_not_deployed_in_us_west_2` run overrides it to eu-west-1 and expects the `network_manager_events_region` check to fail.
+
+### Snapshots
+
+The snapshot tests run a real `tofu plan` of `tests/test_snapshot.tf` (with `tests/test_provider_snapshot.tf`). They compare the generated configuration (`test_synthesizes_properly.json`) and the planned values (`test_planned_values.json`) with the JSON files committed in `tests/__snapshots__/`, so any change in what the module would deploy shows up as a reviewable diff. Volatile attributes (file names, content, timestamps, triggers) are excluded from the comparison. The snapshot configuration uses an eu-west-1 provider, so its plan shows the `network_manager_events_region` warning. Snapshot files in `tests/__snapshots__/` must be committed alongside infrastructure changes; review the diff carefully, since unexpected changes in planned values indicate unintended drift.
+
+`tofu plan` resolves `data.aws_caller_identity` with the credentials in use. The snapshot tests mask every non-mock account ID (as `111111111111`) before comparing or writing the snapshots (`deployment/snapshot_account_ids.py`), and the `snapshot-account-ids` pre-commit hook rejects any snapshot that still contains one. This repository must never contain real AWS account IDs.
+
+How the snapshot tests work: [terraform-snapshot-test on GitHub](https://github.com/joaorodrig/terraform-snapshot-test), [on PyPI](https://pypi.org/project/terraform-snapshot-test/), and the blog post [Terraform snapshot testing: a practical guide](https://empirikon.co.uk/blog/terraform-snapshot-testing-a-practical/).

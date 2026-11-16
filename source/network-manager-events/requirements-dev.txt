@@ -7,3 +7,6 @@ syrupy
 terraform-snapshot-test
 mypy
 types-PyYAML
+bandit
+cfn-lint
+pre-commit

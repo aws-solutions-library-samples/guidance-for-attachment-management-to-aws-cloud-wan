@@ -255,3 +255,38 @@ run "invalid_address_map_segment_name_is_rejected" {
   }
   expect_failures = [var.vpc_segment_address_map]
 }
+
+run "valid_full_return_table_empty_is_accepted" {
+  command = plan
+  variables {
+    full_return_table           = ""
+    full_return_table_by_region = { "eu-west-1" = "inspectioneuw1", "eu-west-2" = "inspectioneuw2" }
+  }
+  assert {
+    condition     = var.full_return_table == "" && length(var.full_return_table_by_region) == 2
+    error_message = "An empty full_return_table with regional inspection segments must be accepted."
+  }
+}
+
+# ─── lambda_sqs_maximum_concurrency validation ────────────────────────────────
+
+run "invalid_sqs_maximum_concurrency_1_is_rejected" {
+  command = plan
+  variables { lambda_sqs_maximum_concurrency = 1 }
+  expect_failures = [var.lambda_sqs_maximum_concurrency]
+}
+
+run "invalid_sqs_maximum_concurrency_1001_is_rejected" {
+  command = plan
+  variables { lambda_sqs_maximum_concurrency = 1001 }
+  expect_failures = [var.lambda_sqs_maximum_concurrency]
+}
+
+run "valid_sqs_maximum_concurrency_2_is_accepted" {
+  command = plan
+  variables { lambda_sqs_maximum_concurrency = 2 }
+  assert {
+    condition     = var.lambda_sqs_maximum_concurrency == 2
+    error_message = "2 must be accepted as the minimum SQS maximum concurrency."
+  }
+}

@@ -25,6 +25,9 @@ Logging markers for operational troubleshooting:
 # Attachment marked for retry because network isn't ready
 [RETRY_ATTACHMENT=NOT_READY {attachment_id}]
 
+# Conflicting-route detection skipped: no full return segment for the attachment region
+[SKIP_CONFLICT_CHECK=NO_FULL_RETURN_SEGMENT {attachment_id}]
+
 """
 
 import json
@@ -168,14 +171,15 @@ def process_route_event(
         if attachment_object.get("NetworkFunctionGroupName", None):
             continue
 
-        # Account filtering
+        # Account filtering: skip this attachment only, other attachments propagating
+        # the same prefix (e.g. an overlapping VPC) must still be evaluated.
         if spoke_account_id in ignore_aws_accounts:
             return_dict["action"] = "attachment account is part of ignored accounts"
-            return return_dict
+            continue
 
         if len(process_only_aws_accounts) > 0 and spoke_account_id not in process_only_aws_accounts:
             return_dict["action"] = "attachment account not part of accounts to process"
-            return return_dict
+            continue
 
         edge_region = attachment_object["EdgeLocation"]
         attachment_state = attachment_object["State"]
@@ -275,6 +279,21 @@ def process_route_event(
                                 default=str,
                             )
                         )
+
+                elif not delete_attachment and full_return_segment is None:
+                    # No segment holds every known route for this region: overlaps can't be detected.
+                    logger.warning(
+                        json.dumps(
+                            {
+                                "event": "SKIP_CONFLICT_CHECK",
+                                "reason": "NO_FULL_RETURN_SEGMENT",
+                                "marker": f"[SKIP_CONFLICT_CHECK=NO_FULL_RETURN_SEGMENT {attachment_id}]",
+                                "attachment_id": attachment_id,
+                                "edge_region": edge_region,
+                                "route_prefix": route_prefix,
+                            }
+                        )
+                    )
 
                 # 3. Admit the attachment to its segment.
                 if not delete_attachment and segment_tag != account_tag:

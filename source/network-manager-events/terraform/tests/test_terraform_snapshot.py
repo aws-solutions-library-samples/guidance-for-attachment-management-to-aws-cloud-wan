@@ -4,6 +4,7 @@ import time
 from typing import Any
 
 import pytest
+from snapshot_account_ids import mask_account_ids
 from syrupy.filters import props
 from terraform_snapshot_test import (
     assert_expectations,
@@ -24,6 +25,9 @@ def test_synthesizes_properly(snapshot_json: Any) -> None:
     # Generate the new manifest
     tf_manifest = synthetise_terraform_json(file_path=FILE_PATH, working_directory=WORKING_DIRECTORY)
 
+    # Never compare with (or write) real AWS account IDs: the plan runs with real credentials
+    tf_manifest = mask_account_ids(tf_manifest)
+
     # Only focus on generated configuration
     assert tf_manifest["configuration"]["root_module"] == snapshot_json()
 
@@ -41,6 +45,9 @@ def test_synthesizes_properly(snapshot_json: Any) -> None:
 def test_planned_values(snapshot_json: Any) -> None:
     # Read generated manifest
     tf_manifest = get_json_from_file(file_path=f"{FILE_PATH}.json", working_directory=WORKING_DIRECTORY)
+
+    # Never compare with (or write) real AWS account IDs: the plan runs with real credentials
+    tf_manifest = mask_account_ids(tf_manifest)
 
     # Sort the lists embedded in the dictionary by the terraform module address
     tf_manifest["planned_values"] = sort_lists_in_dictionary(dictionary=tf_manifest["planned_values"])

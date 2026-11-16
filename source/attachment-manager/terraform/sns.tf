@@ -7,7 +7,9 @@
 # plane is deployed in us-east-1 while workloads run in other regions).
 resource "aws_sns_topic_subscription" "attachment_created" {
   provider = aws.aws_sns_subscribe
-  region   = var.region_sns_topic_subscription
+  # SNS Subscribe must be called in the topic region: default to the topic region
+  # instead of the region of the aliased provider.
+  region = coalesce(var.region_sns_topic_subscription, var.network_events_sns_topic_region)
 
   topic_arn = var.network_events_sns_topic_arn
   protocol  = "sqs"

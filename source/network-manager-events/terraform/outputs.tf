@@ -16,3 +16,13 @@ output "region_name" {
   description = "AWS region in which this module's resources were deployed."
   value       = data.aws_region.current.region
 }
+
+output "lambda_destination_on_failure_arn" {
+  description = "Destination of the failed asynchronous invocations of the publisher Lambda, or null."
+  value       = var.lambda_destination_on_failure_arn
+}
+
+output "lambda_timeout" {
+  description = "Timeout in seconds of the publisher Lambda function."
+  value       = local.lambda_timeout
+}

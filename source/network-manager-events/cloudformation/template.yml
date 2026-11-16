@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: "This template installs the Network Manager Events (SO9490) as part of deploying the AWS Cloud WAN Attachment Management solution"
 
 Parameters:
-  
+
   EventsBusName:
     Description: "Name for the Eventbridge Bus to be used for rule configuration"
     Type: String
@@ -28,8 +28,18 @@ Parameters:
     Default: 30
     AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653]
 
+  FailureDestinationArn:
+    Description: "Optional ARN of an SQS queue, SNS topic, Lambda function or EventBridge bus receiving the events that still fail after 2 asynchronous retries"
+    Type: String
+    Default: ""
+
+Conditions:
+  HasFailureDestination: !Not [!Equals [!Ref FailureDestinationArn, ""]]
+
+# Network Manager only publishes its EventBridge events in us-west-2: deploy this stack there.
+
 Resources:
-  
+
   SnsNetworkEvents:
     Type: AWS::SNS::Topic
     Properties:
@@ -41,7 +51,7 @@ Resources:
   SnsNetworkEventsPolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:
-      Topics: 
+      Topics:
         - !GetAtt SnsNetworkEvents.TopicArn
       PolicyDocument:
         Statement:
@@ -86,6 +96,20 @@ Resources:
                 Action:
                   - "sns:Publish"
                 Resource: !GetAtt SnsNetworkEvents.TopicArn
+        - !If
+          - HasFailureDestination
+          - PolicyName: NetworkManagerEventsFailureDestination
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "sqs:SendMessage"
+                    - "sns:Publish"
+                    - "lambda:InvokeFunction"
+                    - "events:PutEvents"
+                  Resource: !Ref FailureDestinationArn
+          - !Ref "AWS::NoValue"
 
   NetworkEventsProcessingLambdaFunction:
     Type: "AWS::Serverless::Function"
@@ -94,7 +118,8 @@ Resources:
       CodeUri: ../lambda/sns_publish_attributes
       Handler: lambda_handler.handler
       Runtime: python3.14
-      Timeout: 300
+      # A single sns:Publish call
+      Timeout: 30
       Role: !GetAtt NetworkEventsProcessingLambdaFunctionRole.Arn
       Environment:
         Variables:
@@ -107,15 +132,27 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${NetworkEventsProcessingLambdaFunction}"
       RetentionInDays: !Ref LogRetentionInDays
 
+  NetworkEventsProcessingLambdaEventInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Condition: HasFailureDestination
+    Properties:
+      FunctionName: !Ref NetworkEventsProcessingLambdaFunction
+      Qualifier: "$LATEST"
+      MaximumRetryAttempts: 2
+      MaximumEventAgeInSeconds: 3600
+      DestinationConfig:
+        OnFailure:
+          Destination: !Ref FailureDestinationArn
+
   NetworkEventsRule:
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub "network-manager-events-${Name}"
       EventBusName: !Ref EventsBusName
-      EventPattern: 
+      EventPattern:
         source:
           - "aws.networkmanager"
-      Targets: 
+      Targets:
         - Id: events-lambda
           Arn: !GetAtt NetworkEventsProcessingLambdaFunction.Arn
 
@@ -126,13 +163,12 @@ Resources:
       Principal:  "events.amazonaws.com"
       SourceArn: !GetAtt NetworkEventsRule.Arn
       FunctionName: !GetAtt NetworkEventsProcessingLambdaFunction.Arn
-      
+
 
 Outputs:
 
   RegionName:
     Value: !Ref AWS::Region
-  
+
   SnsNetworkEventsArn:
     Value: !GetAtt SnsNetworkEvents.TopicArn
-  

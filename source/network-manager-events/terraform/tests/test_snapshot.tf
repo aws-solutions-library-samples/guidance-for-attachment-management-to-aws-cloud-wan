@@ -1,4 +1,4 @@
-# Intantiate the module
+# Instantiates the module under test (used by the Python snapshot tests).
 module "test_module" {
   source                            = "../"
   global_network_name               = "test"

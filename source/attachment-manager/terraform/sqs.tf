@@ -6,6 +6,11 @@ resource "aws_sqs_queue" "cloudwan_tag_dlq" {
   name   = "${var.name}_dlq"
   region = data.aws_region.current.region
 
+  # Maximum retention (14 days). For standard queues the retention period counts
+  # from the original enqueue time, so the default (4 days) could expire messages
+  # shortly after they reach the DLQ.
+  message_retention_seconds = 1209600
+
   fifo_queue                  = false
   content_based_deduplication = false
 

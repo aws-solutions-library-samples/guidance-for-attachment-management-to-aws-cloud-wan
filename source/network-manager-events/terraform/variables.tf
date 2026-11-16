@@ -47,3 +47,9 @@ variable "lambda_runtime" {
   type        = string
   default     = "python3.14"
 }
+
+variable "lambda_destination_on_failure_arn" {
+  description = "ARN of an SQS queue, SNS topic, Lambda function or EventBridge bus that receives the Network Manager events the publisher failed to process (after 2 retries). When null, failed events are only visible in the Lambda logs and Errors metric."
+  type        = string
+  default     = null
+}

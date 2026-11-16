@@ -55,7 +55,7 @@ mock_provider "aws" {
     }
   }
 
-  # Simulates a production-grade AWS account in eu-west-1.
+  # Simulates a production-grade AWS account in us-west-2 (the Network Manager events region).
   # account_id flows into the SNS topic resource policy (AllowPublish /
   # AllowSubscribe principal identifiers).
   mock_data "aws_caller_identity" {
@@ -66,13 +66,13 @@ mock_provider "aws" {
     }
   }
 
-  # Simulates the eu-west-1 provider region.
+  # Simulates the us-west-2 provider region.
   # region (not name, which is deprecated in provider v6) is returned by
   # the region_name module output via data.aws_region.current.region.
   mock_data "aws_region" {
     defaults = {
-      region      = "eu-west-1"
-      description = "Europe (Ireland)"
+      region      = "us-west-2"
+      description = "US West (Oregon)"
     }
   }
 
@@ -92,7 +92,7 @@ mock_provider "aws" {
   # A concrete value here prevents unknown propagation through plan evaluation.
   mock_resource "aws_sns_topic" {
     defaults = {
-      arn = "arn:aws:sns:eu-west-1:123456789012:networkmanager_events_mock"
+      arn = "arn:aws:sns:us-west-2:123456789012:networkmanager_events_mock"
     }
   }
 
@@ -100,7 +100,7 @@ mock_provider "aws" {
   # A concrete value allows the source_arn assertion to evaluate cleanly.
   mock_resource "aws_cloudwatch_event_rule" {
     defaults = {
-      arn = "arn:aws:events:eu-west-1:123456789012:rule/default/networkmanager_events_mock"
+      arn = "arn:aws:events:us-west-2:123456789012:rule/default/networkmanager_events_mock"
     }
   }
 
@@ -127,16 +127,16 @@ mock_provider "aws" {
   # configured attribute set by the module call, so it is excluded here.
   mock_resource "aws_lambda_function" {
     defaults = {
-      arn           = "arn:aws:lambda:eu-west-1:123456789012:function:network_events_sns_publish_mock"
-      qualified_arn = "arn:aws:lambda:eu-west-1:123456789012:function:network_events_sns_publish_mock:$LATEST"
-      invoke_arn    = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:123456789012:function:network_events_sns_publish_mock/invocations"
+      arn           = "arn:aws:lambda:us-west-2:123456789012:function:network_events_sns_publish_mock"
+      qualified_arn = "arn:aws:lambda:us-west-2:123456789012:function:network_events_sns_publish_mock:$LATEST"
+      invoke_arn    = "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:network_events_sns_publish_mock/invocations"
     }
   }
 
   # CloudWatch log group for Lambda function output.
   mock_resource "aws_cloudwatch_log_group" {
     defaults = {
-      arn = "arn:aws:logs:eu-west-1:123456789012:log-group:/aws/lambda/network_events_sns_publish_mock"
+      arn = "arn:aws:logs:us-west-2:123456789012:log-group:/aws/lambda/network_events_sns_publish_mock"
     }
   }
 }
@@ -386,7 +386,7 @@ run "lambda_permission_scoped_to_rule" {
 # output reference (e.g. referencing a renamed resource) would cause silent
 # failures in all consuming configurations.
 #
-# Expectation: The region_name output resolves to the mocked region "eu-west-1",
+# Expectation: The region_name output resolves to the mocked region "us-west-2",
 # confirming it is wired to the aws_region data source and not hardcoded.
 run "module_outputs_wired_correctly" {
   command = plan
@@ -396,9 +396,9 @@ run "module_outputs_wired_correctly" {
     cloudwatch_logs_retention_in_days = 14
   }
 
-  # region_name must come from the aws_region data source (mocked to eu-west-1).
+  # region_name must come from the aws_region data source (mocked to us-west-2).
   assert {
-    condition     = output.region_name == "eu-west-1"
+    condition     = output.region_name == "us-west-2"
     error_message = "output.region_name must reflect the deployment region from the aws_region data source, not a hardcoded value."
   }
 }
@@ -447,4 +447,65 @@ run "reject_standard_python_log_level" {
   }
 
   expect_failures = [var.lambda_logging_level]
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Network Manager events region
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Network Manager publishes its EventBridge events in us-west-2 only. Deploying
+# the rule anywhere else produces a rule that never fires: the check block
+# reports it.
+
+run "warn_when_not_deployed_in_us_west_2" {
+  command = plan
+
+  variables {
+    global_network_name = "eu-deployed"
+  }
+
+  override_data {
+    target = data.aws_region.current
+    values = {
+      region = "eu-west-1"
+    }
+  }
+
+  expect_failures = [check.network_manager_events_region]
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Lambda timeout and failed invocations
+# ─────────────────────────────────────────────────────────────────────────────
+
+run "lambda_timeout_and_no_failure_destination_by_default" {
+  command = plan
+
+  variables {
+    global_network_name = "prod-core-network"
+  }
+
+  assert {
+    condition     = output.lambda_timeout == 30
+    error_message = "The publisher only calls sns:Publish once; the timeout must be 30 s."
+  }
+
+  assert {
+    condition     = output.lambda_destination_on_failure_arn == null
+    error_message = "No failure destination must be configured by default."
+  }
+}
+
+run "failure_destination_is_configured" {
+  command = plan
+
+  variables {
+    global_network_name               = "prod-core-network"
+    lambda_destination_on_failure_arn = "arn:aws:sqs:us-west-2:123456789012:network_manager_events_failures"
+  }
+
+  assert {
+    condition     = output.lambda_destination_on_failure_arn == "arn:aws:sqs:us-west-2:123456789012:network_manager_events_failures"
+    error_message = "Failed asynchronous invocations must be sent to lambda_destination_on_failure_arn."
+  }
 }

@@ -12,6 +12,8 @@ core_network_id = core_network_arn.split("/")[-1]
 global_network_id = "global-network-123456789"
 full_return_segment = "fullreturn"
 regional_full_return_segment = "inspectioneuw1"
+# Regional inspection segments used as full return segments when the last-hop loopbacks are removed
+regional_full_return_segment_by_region = {"eu-west-1": "inspectioneuw1", "eu-west-2": "inspectioneuw2"}
 quarantine_routes_segment = "quarantineroutes"
 
 # Attachment account owner: 222222222222

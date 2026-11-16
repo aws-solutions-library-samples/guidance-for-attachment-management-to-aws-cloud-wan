@@ -28,7 +28,7 @@ output "sqs_queue_arn" {
 }
 
 output "sqs_queue_url" {
-  description = "URL of the main SQS queue (also set as the SQS_URL Lambda environment variable)."
+  description = "URL of the main SQS queue."
   value       = aws_sqs_queue.cloudwan_tag.url
 }
 
@@ -62,6 +62,11 @@ output "sqs_max_receive_count" {
 output "sns_subscription_arn" {
   description = "ARN of the SNS subscription that connects the network-events topic to the SQS queue."
   value       = aws_sns_topic_subscription.attachment_created.arn
+}
+
+output "sns_subscription_region" {
+  description = "Region in which the SNS subscription is created (the network-events topic region unless region_sns_topic_subscription is set)."
+  value       = aws_sns_topic_subscription.attachment_created.region
 }
 
 output "sns_filter_policy" {

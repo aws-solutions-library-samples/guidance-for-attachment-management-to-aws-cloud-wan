@@ -9,6 +9,12 @@
             "resources": [
               {
                 "address": "module.test_module.module.lambda_network_events_sns_publish.aws_cloudwatch_log_group.lambda[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "region": null
+                },
+                "identity_schema_version": 0,
                 "index": 0,
                 "mode": "managed",
                 "name": "lambda",
@@ -29,6 +35,11 @@
               },
               {
                 "address": "module.test_module.module.lambda_network_events_sns_publish.aws_iam_role.lambda[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null
+                },
+                "identity_schema_version": 0,
                 "index": 0,
                 "mode": "managed",
                 "name": "lambda",
@@ -53,6 +64,12 @@
               },
               {
                 "address": "module.test_module.module.lambda_network_events_sns_publish.aws_iam_role_policy.additional_json[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "role": null
+                },
+                "identity_schema_version": 0,
                 "index": 0,
                 "mode": "managed",
                 "name": "additional_json",
@@ -67,6 +84,12 @@
               },
               {
                 "address": "module.test_module.module.lambda_network_events_sns_publish.aws_iam_role_policy.logs[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "role": null
+                },
+                "identity_schema_version": 0,
                 "index": 0,
                 "mode": "managed",
                 "name": "logs",
@@ -81,6 +104,12 @@
               },
               {
                 "address": "module.test_module.module.lambda_network_events_sns_publish.aws_lambda_function.this[0]",
+                "identity": {
+                  "account_id": null,
+                  "function_name": null,
+                  "region": null
+                },
+                "identity_schema_version": 0,
                 "index": 0,
                 "mode": "managed",
                 "name": "this",
@@ -147,7 +176,7 @@
                   "replace_security_groups_on_destroy": null,
                   "replacement_security_group_ids": null,
                   "reserved_concurrent_executions": -1,
-                  "runtime": "python3.13",
+                  "runtime": "python3.14",
                   "s3_bucket": null,
                   "s3_key": null,
                   "s3_object_version": null,
@@ -156,7 +185,7 @@
                   "source_kms_key_arn": null,
                   "tags": null,
                   "tenancy_config": [],
-                  "timeout": 900,
+                  "timeout": 30,
                   "timeouts": null,
                   "use_resource_timeout_for_propagation": null,
                   "vpc_config": []
@@ -273,6 +302,12 @@
         "resources": [
           {
             "address": "module.test_module.aws_cloudwatch_event_rule.network_manager_events",
+            "identity": {
+              "account_id": null,
+              "name": null,
+              "region": null
+            },
+            "identity_schema_version": 0,
             "mode": "managed",
             "name": "network_manager_events",
             "provider_name": "registry.opentofu.org/hashicorp/aws",
@@ -297,6 +332,14 @@
           },
           {
             "address": "module.test_module.aws_cloudwatch_event_target.network_manager_events",
+            "identity": {
+              "account_id": null,
+              "event_bus_name": null,
+              "region": null,
+              "rule": null,
+              "target_id": null
+            },
+            "identity_schema_version": 0,
             "mode": "managed",
             "name": "network_manager_events",
             "provider_name": "registry.opentofu.org/hashicorp/aws",
@@ -339,6 +382,14 @@
           },
           {
             "address": "module.test_module.aws_lambda_permission.network_manager_events",
+            "identity": {
+              "account_id": null,
+              "function_name": null,
+              "qualifier": null,
+              "region": null,
+              "statement_id": null
+            },
+            "identity_schema_version": 0,
             "mode": "managed",
             "name": "network_manager_events",
             "provider_name": "registry.opentofu.org/hashicorp/aws",
@@ -384,6 +435,10 @@
           },
           {
             "address": "module.test_module.aws_sns_topic.network_manager_events",
+            "identity": {
+              "arn": null
+            },
+            "identity_schema_version": 0,
             "mode": "managed",
             "name": "network_manager_events",
             "provider_name": "registry.opentofu.org/hashicorp/aws",
@@ -421,6 +476,10 @@
           },
           {
             "address": "module.test_module.aws_sns_topic_policy.network_manager_events",
+            "identity": {
+              "arn": null
+            },
+            "identity_schema_version": 0,
             "mode": "managed",
             "name": "network_manager_events",
             "provider_name": "registry.opentofu.org/hashicorp/aws",

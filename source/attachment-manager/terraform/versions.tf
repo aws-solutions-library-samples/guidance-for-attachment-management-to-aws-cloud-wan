@@ -1,6 +1,9 @@
 # Declares the minimum Terraform/OpenTofu version constraints and required
 # provider configurations for this module.
 terraform {
+  # mock_provider in the .tftest.hcl files needs OpenTofu >= 1.8.
+  required_version = ">= 1.8"
+
   required_providers {
     # AWS provider manages all Cloud WAN, Lambda, SQS, SNS, and IAM resources.
     aws = {

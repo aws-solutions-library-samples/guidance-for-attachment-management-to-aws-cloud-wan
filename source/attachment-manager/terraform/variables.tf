@@ -18,7 +18,7 @@ variable "region" {
 # ─── SNS Topic (Network Events Source) ────────────────────────────────────────
 
 variable "network_events_sns_topic_region" {
-  description = "AWS region where the network-events SNS topic lives. Used when the topic is in a different region from the Lambda (common in centralised-networking designs)."
+  description = "AWS region where the network-events SNS topic lives (us-west-2 for Network Manager events). The SNS subscription is created in this region."
   type        = string
 }
 
@@ -28,7 +28,7 @@ variable "network_events_sns_topic_arn" {
 }
 
 variable "region_sns_topic_subscription" {
-  description = "Region passed to the aliased aws.aws_sns_subscribe provider when creating the SNS subscription. Must match network_events_sns_topic_region when the topic is cross-region."
+  description = "Region in which the SNS subscription is created (through the aliased aws.aws_sns_subscribe provider). Defaults to network_events_sns_topic_region; override only when it must differ."
   type        = string
   default     = null
 }
@@ -173,9 +173,19 @@ variable "aws_account_reader_role_arn" {
 }
 
 variable "lambda_reserved_concurrent_executions" {
-  description = "Maximum number of concurrent Lambda invocations. Set to null for unlimited. A low value (e.g. 1) ensures sequential processing which avoids race conditions on attachment state."
+  description = "Reserved concurrency of the Lambda function (null = unreserved). Don't use it to limit the SQS processing rate: throttled SQS receives count towards maxReceiveCount and move messages to the DLQ early. Use lambda_sqs_maximum_concurrency instead."
   type        = number
   default     = null
+}
+
+variable "lambda_sqs_maximum_concurrency" {
+  description = "Maximum number of concurrent Lambda invocations started by the SQS event source mapping (2-1000, null = no limit). 2 keeps processing close to sequential, limiting races on attachment state, without throttling."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.lambda_sqs_maximum_concurrency == null ? true : (var.lambda_sqs_maximum_concurrency >= 2 && var.lambda_sqs_maximum_concurrency <= 1000)
+    error_message = "lambda_sqs_maximum_concurrency must be between 2 and 1000 (AWS limits), or null."
+  }
 }
 
 # ─── Operational ──────────────────────────────────────────────────────────────
