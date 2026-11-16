@@ -1,0 +1,645 @@
+{
+  "root_module": {
+    "child_modules": [
+      {
+        "address": "module.test_module",
+        "child_modules": [
+          {
+            "address": "module.test_module.module.lambda_network_events_sns_publish",
+            "resources": [
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.aws_cloudwatch_log_group.lambda[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "region": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "lambda",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "tags_all": {}
+                },
+                "type": "aws_cloudwatch_log_group",
+                "values": {
+                  "kms_key_id": null,
+                  "name": "/aws/lambda/network_events_sns_publish_test",
+                  "region": "eu-west-1",
+                  "retention_in_days": 1,
+                  "skip_destroy": false,
+                  "tags": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.aws_iam_role.lambda[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "lambda",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "inline_policy": [],
+                  "managed_policy_arns": [],
+                  "tags_all": {}
+                },
+                "type": "aws_iam_role",
+                "values": {
+                  "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                  "description": null,
+                  "force_detach_policies": true,
+                  "max_session_duration": 3600,
+                  "name": "network_events_sns_publish_test",
+                  "path": "/",
+                  "permissions_boundary": null,
+                  "tags": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.aws_iam_role_policy.additional_json[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "role": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "additional_json",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_iam_role_policy",
+                "values": {
+                  "name": "network_events_sns_publish_test",
+                  "role": "network_events_sns_publish_test"
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.aws_iam_role_policy.logs[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "role": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "logs",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_iam_role_policy",
+                "values": {
+                  "name": "network_events_sns_publish_test-logs",
+                  "role": "network_events_sns_publish_test"
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.aws_lambda_function.this[0]",
+                "identity": {
+                  "account_id": null,
+                  "function_name": null,
+                  "region": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "this",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "architectures": [],
+                  "capacity_provider_config": [],
+                  "dead_letter_config": [],
+                  "durable_config": [],
+                  "environment": [
+                    {
+                      "variables": {}
+                    }
+                  ],
+                  "ephemeral_storage": [
+                    {}
+                  ],
+                  "file_system_config": [],
+                  "image_config": [],
+                  "logging_config": [
+                    {}
+                  ],
+                  "snap_start": [],
+                  "tags_all": {},
+                  "tenancy_config": [],
+                  "tracing_config": [],
+                  "vpc_config": []
+                },
+                "type": "aws_lambda_function",
+                "values": {
+                  "capacity_provider_config": [],
+                  "code_signing_config_arn": null,
+                  "dead_letter_config": [],
+                  "description": "",
+                  "durable_config": [],
+                  "environment": [
+                    {}
+                  ],
+                  "ephemeral_storage": [
+                    {
+                      "size": 512
+                    }
+                  ],
+                  "file_system_config": [],
+                  "function_name": "network_events_sns_publish_test",
+                  "handler": "lambda_handler.handler",
+                  "image_config": [],
+                  "image_uri": null,
+                  "kms_key_arn": null,
+                  "layers": null,
+                  "logging_config": [
+                    {
+                      "application_log_level": null,
+                      "log_format": "Text",
+                      "system_log_level": null
+                    }
+                  ],
+                  "memory_size": 128,
+                  "package_type": "Zip",
+                  "publish": false,
+                  "publish_to": null,
+                  "region": "eu-west-1",
+                  "replace_security_groups_on_destroy": null,
+                  "replacement_security_group_ids": null,
+                  "reserved_concurrent_executions": -1,
+                  "runtime": "python3.14",
+                  "s3_bucket": null,
+                  "s3_key": null,
+                  "s3_object_version": null,
+                  "skip_destroy": false,
+                  "snap_start": [],
+                  "source_kms_key_arn": null,
+                  "tags": null,
+                  "tenancy_config": [],
+                  "timeout": 30,
+                  "timeouts": null,
+                  "use_resource_timeout_for_propagation": null,
+                  "vpc_config": []
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.data.aws_iam_policy_document.logs[0]",
+                "index": 0,
+                "mode": "data",
+                "name": "logs",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "statement": [
+                    {
+                      "actions": [
+                        false,
+                        false,
+                        false
+                      ],
+                      "condition": [],
+                      "not_principals": [],
+                      "principals": [],
+                      "resources": [
+                        false,
+                        false
+                      ]
+                    }
+                  ]
+                },
+                "type": "aws_iam_policy_document",
+                "values": {
+                  "override_json": null,
+                  "override_policy_documents": null,
+                  "policy_id": null,
+                  "source_json": null,
+                  "source_policy_documents": null,
+                  "statement": [
+                    {
+                      "actions": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "condition": [],
+                      "effect": "Allow",
+                      "not_actions": null,
+                      "not_principals": [],
+                      "not_resources": null,
+                      "principals": [],
+                      "resources": [
+                        null,
+                        null
+                      ],
+                      "sid": null
+                    }
+                  ],
+                  "version": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.local_file.archive_plan[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "archive_plan",
+                "provider_name": "registry.opentofu.org/hashicorp/local",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "sensitive_content": true
+                },
+                "type": "local_file",
+                "values": {
+                  "content_base64": null,
+                  "directory_permission": "0755",
+                  "file_permission": "0644",
+                  "sensitive_content": null,
+                  "source": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.null_resource.archive[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "archive",
+                "provider_name": "registry.opentofu.org/hashicorp/null",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "triggers": {}
+                },
+                "type": "null_resource",
+                "values": {
+                  "triggers": {}
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_network_events_sns_publish.terraform_data.package_filename_for_hash[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "package_filename_for_hash",
+                "provider_name": "terraform.io/builtin/terraform",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "input": {},
+                  "output": {}
+                },
+                "type": "terraform_data",
+                "values": {
+                  "input": {}
+                }
+              }
+            ]
+          }
+        ],
+        "resources": [
+          {
+            "address": "module.test_module.aws_cloudwatch_event_rule.network_manager_events",
+            "identity": {
+              "account_id": null,
+              "name": null,
+              "region": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "network_manager_events",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 1,
+            "sensitive_values": {
+              "tags_all": {}
+            },
+            "type": "aws_cloudwatch_event_rule",
+            "values": {
+              "description": null,
+              "event_bus_name": "default",
+              "event_pattern": "{\"source\":[\"aws.networkmanager\"]}",
+              "force_destroy": false,
+              "is_enabled": null,
+              "name": "networkmanager_events_test",
+              "region": "eu-west-1",
+              "role_arn": null,
+              "schedule_expression": null,
+              "state": null,
+              "tags": null
+            }
+          },
+          {
+            "address": "module.test_module.aws_cloudwatch_event_target.network_manager_events",
+            "identity": {
+              "account_id": null,
+              "event_bus_name": null,
+              "region": null,
+              "rule": null,
+              "target_id": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "network_manager_events",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 1,
+            "sensitive_values": {
+              "appsync_target": [],
+              "batch_target": [],
+              "dead_letter_config": [],
+              "ecs_target": [],
+              "http_target": [],
+              "input_transformer": [],
+              "kinesis_target": [],
+              "redshift_target": [],
+              "retry_policy": [],
+              "run_command_targets": [],
+              "sagemaker_pipeline_target": [],
+              "sqs_target": []
+            },
+            "type": "aws_cloudwatch_event_target",
+            "values": {
+              "appsync_target": [],
+              "batch_target": [],
+              "dead_letter_config": [],
+              "ecs_target": [],
+              "event_bus_name": "default",
+              "force_destroy": false,
+              "http_target": [],
+              "input": null,
+              "input_path": null,
+              "input_transformer": [],
+              "kinesis_target": [],
+              "redshift_target": [],
+              "region": "eu-west-1",
+              "retry_policy": [],
+              "role_arn": null,
+              "run_command_targets": [],
+              "sagemaker_pipeline_target": [],
+              "sqs_target": []
+            }
+          },
+          {
+            "address": "module.test_module.aws_lambda_permission.network_manager_events",
+            "identity": {
+              "account_id": null,
+              "function_name": null,
+              "qualifier": null,
+              "region": null,
+              "statement_id": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "network_manager_events",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {},
+            "type": "aws_lambda_permission",
+            "values": {
+              "action": "lambda:InvokeFunction",
+              "event_source_token": null,
+              "function_name": "network_events_sns_publish_test",
+              "function_url_auth_type": null,
+              "invoked_via_function_url": null,
+              "principal": "events.amazonaws.com",
+              "principal_org_id": null,
+              "qualifier": null,
+              "region": "eu-west-1",
+              "source_account": null,
+              "statement_id": "AllowExecutionFromEvents",
+              "timeouts": null
+            }
+          },
+          {
+            "address": "module.test_module.aws_networkmanager_global_network.global_network",
+            "mode": "managed",
+            "name": "global_network",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "tags": {},
+              "tags_all": {}
+            },
+            "type": "aws_networkmanager_global_network",
+            "values": {
+              "description": null,
+              "tags": {
+                "Name": "test"
+              },
+              "tags_all": {
+                "Name": "test"
+              },
+              "timeouts": null
+            }
+          },
+          {
+            "address": "module.test_module.aws_sns_topic.network_manager_events",
+            "identity": {
+              "arn": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "network_manager_events",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "tags_all": {}
+            },
+            "type": "aws_sns_topic",
+            "values": {
+              "application_failure_feedback_role_arn": null,
+              "application_success_feedback_role_arn": null,
+              "application_success_feedback_sample_rate": null,
+              "archive_policy": null,
+              "content_based_deduplication": false,
+              "delivery_policy": null,
+              "display_name": null,
+              "fifo_topic": false,
+              "firehose_failure_feedback_role_arn": null,
+              "firehose_success_feedback_role_arn": null,
+              "firehose_success_feedback_sample_rate": null,
+              "http_failure_feedback_role_arn": null,
+              "http_success_feedback_role_arn": null,
+              "http_success_feedback_sample_rate": null,
+              "kms_master_key_id": "alias/aws/sns",
+              "lambda_failure_feedback_role_arn": null,
+              "lambda_success_feedback_role_arn": null,
+              "lambda_success_feedback_sample_rate": null,
+              "name": "networkmanager_events_test",
+              "region": "eu-west-1",
+              "sqs_failure_feedback_role_arn": null,
+              "sqs_success_feedback_role_arn": null,
+              "sqs_success_feedback_sample_rate": null,
+              "tags": null
+            }
+          },
+          {
+            "address": "module.test_module.aws_sns_topic_policy.network_manager_events",
+            "identity": {
+              "arn": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "network_manager_events",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {},
+            "type": "aws_sns_topic_policy",
+            "values": {
+              "region": "eu-west-1"
+            }
+          },
+          {
+            "address": "module.test_module.data.aws_iam_policy_document.lambda_network_manager_events",
+            "mode": "data",
+            "name": "lambda_network_manager_events",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "statement": [
+                {
+                  "actions": [
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [],
+                  "resources": [
+                    false
+                  ]
+                }
+              ]
+            },
+            "type": "aws_iam_policy_document",
+            "values": {
+              "override_json": null,
+              "override_policy_documents": null,
+              "policy_id": null,
+              "source_json": null,
+              "source_policy_documents": null,
+              "statement": [
+                {
+                  "actions": [
+                    "sns:Publish"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [],
+                  "resources": [
+                    null
+                  ],
+                  "sid": "AllowPublish"
+                }
+              ],
+              "version": null
+            }
+          },
+          {
+            "address": "module.test_module.data.aws_iam_policy_document.sns_network_manager_events",
+            "mode": "data",
+            "name": "sns_network_manager_events",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "statement": [
+                {
+                  "actions": [
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [
+                    {
+                      "identifiers": [
+                        false
+                      ]
+                    }
+                  ],
+                  "resources": [
+                    false
+                  ]
+                },
+                {
+                  "actions": [
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [
+                    {
+                      "identifiers": [
+                        false
+                      ]
+                    }
+                  ],
+                  "resources": [
+                    false
+                  ]
+                }
+              ]
+            },
+            "type": "aws_iam_policy_document",
+            "values": {
+              "override_json": null,
+              "override_policy_documents": null,
+              "policy_id": null,
+              "source_json": null,
+              "source_policy_documents": null,
+              "statement": [
+                {
+                  "actions": [
+                    "sns:Publish"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [
+                    {
+                      "identifiers": [
+                        "111111111111"
+                      ],
+                      "type": "AWS"
+                    }
+                  ],
+                  "resources": [
+                    null
+                  ],
+                  "sid": "AllowPublish"
+                },
+                {
+                  "actions": [
+                    "sns:Subscribe"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [
+                    {
+                      "identifiers": [
+                        "111111111111"
+                      ],
+                      "type": "AWS"
+                    }
+                  ],
+                  "resources": [
+                    null
+                  ],
+                  "sid": "AllowSubscribe"
+                }
+              ],
+              "version": null
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

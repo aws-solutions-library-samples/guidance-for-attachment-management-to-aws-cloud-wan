@@ -1,0 +1,1573 @@
+{
+  "root_module": {
+    "child_modules": [
+      {
+        "address": "module.test_module",
+        "child_modules": [
+          {
+            "address": "module.test_module.module.lambda_routing_config_on_demand",
+            "resources": [
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.aws_cloudwatch_log_group.lambda[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "region": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "lambda",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "tags_all": {}
+                },
+                "type": "aws_cloudwatch_log_group",
+                "values": {
+                  "kms_key_id": null,
+                  "name": "/aws/lambda/test_eu-west-1_routing",
+                  "region": "eu-west-1",
+                  "retention_in_days": 1,
+                  "skip_destroy": false,
+                  "tags": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.aws_iam_role.lambda[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "lambda",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "inline_policy": [],
+                  "managed_policy_arns": [],
+                  "tags_all": {}
+                },
+                "type": "aws_iam_role",
+                "values": {
+                  "description": null,
+                  "force_detach_policies": true,
+                  "max_session_duration": 3600,
+                  "name": "test_eu-west-1_routing",
+                  "path": "/",
+                  "permissions_boundary": null,
+                  "tags": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.aws_iam_role_policy.additional_json[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "role": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "additional_json",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_iam_role_policy",
+                "values": {
+                  "name": "test_eu-west-1_routing",
+                  "role": "test_eu-west-1_routing"
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.aws_iam_role_policy.logs[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "role": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "logs",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_iam_role_policy",
+                "values": {
+                  "name": "test_eu-west-1_routing-logs",
+                  "role": "test_eu-west-1_routing"
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.aws_lambda_function.this[0]",
+                "identity": {
+                  "account_id": null,
+                  "function_name": null,
+                  "region": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "this",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "architectures": [],
+                  "capacity_provider_config": [],
+                  "dead_letter_config": [],
+                  "durable_config": [],
+                  "environment": [
+                    {
+                      "variables": {}
+                    }
+                  ],
+                  "ephemeral_storage": [
+                    {}
+                  ],
+                  "file_system_config": [],
+                  "image_config": [],
+                  "logging_config": [],
+                  "snap_start": [],
+                  "tags_all": {},
+                  "tenancy_config": [],
+                  "tracing_config": [],
+                  "vpc_config": []
+                },
+                "type": "aws_lambda_function",
+                "values": {
+                  "capacity_provider_config": [],
+                  "code_signing_config_arn": null,
+                  "dead_letter_config": [],
+                  "description": "",
+                  "durable_config": [],
+                  "environment": [
+                    {
+                      "variables": {
+                        "ACCOUNT_ROUTE_DOMAIN_TAG": "route-domain",
+                        "AWS_ACCOUNT_READ_ROLE_ARN": "arn:aws:iam::000000000000:role/org-reader",
+                        "FULL_RETURN_TABLE": "fullreturn",
+                        "FULL_RETURN_TABLE_BY_REGION": "{}",
+                        "IGNORE_AWS_ACCOUNTS": "[]",
+                        "LOGGING_LEVEL": "WARN",
+                        "MANAGED_CORE_NETWORK_ARN": "arn:aws:networkmanager:us-east-1:111111111111:core-network/c0123456789abcdef",
+                        "MANAGED_GLOBAL_NETWORK_ID": "global-network-123456789",
+                        "PERFORM_ATTACHMENT_DELETIONS": "true",
+                        "PROCESS_ONLY_AWS_ACCOUNTS": "[]",
+                        "QUARANTINE_ROUTES_SEGMENT": "quarantineroutes",
+                        "QUARANTINE_SEGMENT": "quarantine",
+                        "SEGMENT_ADDRESSING_FILE": "vpc_segment_address_map.yml"
+                      }
+                    }
+                  ],
+                  "ephemeral_storage": [
+                    {
+                      "size": 512
+                    }
+                  ],
+                  "file_system_config": [],
+                  "function_name": "test_eu-west-1_routing",
+                  "handler": "lambda_handler.handler",
+                  "image_config": [],
+                  "image_uri": null,
+                  "kms_key_arn": null,
+                  "layers": null,
+                  "memory_size": 128,
+                  "package_type": "Zip",
+                  "publish": false,
+                  "publish_to": null,
+                  "region": "eu-west-1",
+                  "replace_security_groups_on_destroy": null,
+                  "replacement_security_group_ids": null,
+                  "reserved_concurrent_executions": -1,
+                  "runtime": "python3.14",
+                  "s3_bucket": null,
+                  "s3_key": null,
+                  "s3_object_version": null,
+                  "skip_destroy": false,
+                  "snap_start": [],
+                  "source_kms_key_arn": null,
+                  "tags": null,
+                  "tenancy_config": [],
+                  "timeout": 90,
+                  "timeouts": null,
+                  "use_resource_timeout_for_propagation": null,
+                  "vpc_config": []
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.data.aws_caller_identity.current",
+                "mode": "data",
+                "name": "current",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_caller_identity"
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.data.aws_iam_policy_document.assume_role[0]",
+                "index": 0,
+                "mode": "data",
+                "name": "assume_role",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "statement": [
+                    {
+                      "actions": [
+                        false
+                      ],
+                      "condition": [],
+                      "not_principals": [],
+                      "principals": [
+                        {
+                          "identifiers": [
+                            false
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "type": "aws_iam_policy_document",
+                "values": {
+                  "override_json": null,
+                  "override_policy_documents": null,
+                  "policy_id": null,
+                  "source_json": null,
+                  "source_policy_documents": null,
+                  "statement": [
+                    {
+                      "actions": [
+                        "sts:AssumeRole"
+                      ],
+                      "condition": [],
+                      "effect": "Allow",
+                      "not_actions": null,
+                      "not_principals": [],
+                      "not_resources": null,
+                      "principals": [
+                        {
+                          "identifiers": [
+                            "lambda.amazonaws.com"
+                          ],
+                          "type": "Service"
+                        }
+                      ],
+                      "resources": null,
+                      "sid": null
+                    }
+                  ],
+                  "version": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.data.aws_iam_policy_document.logs[0]",
+                "index": 0,
+                "mode": "data",
+                "name": "logs",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "statement": [
+                    {
+                      "actions": [
+                        false,
+                        false,
+                        false
+                      ],
+                      "condition": [],
+                      "not_principals": [],
+                      "principals": [],
+                      "resources": [
+                        false,
+                        false
+                      ]
+                    }
+                  ]
+                },
+                "type": "aws_iam_policy_document",
+                "values": {
+                  "override_json": null,
+                  "override_policy_documents": null,
+                  "policy_id": null,
+                  "source_json": null,
+                  "source_policy_documents": null,
+                  "statement": [
+                    {
+                      "actions": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "condition": [],
+                      "effect": "Allow",
+                      "not_actions": null,
+                      "not_principals": [],
+                      "not_resources": null,
+                      "principals": [],
+                      "resources": [
+                        null,
+                        null
+                      ],
+                      "sid": null
+                    }
+                  ],
+                  "version": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.data.aws_partition.current",
+                "mode": "data",
+                "name": "current",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_partition"
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.data.aws_region.current",
+                "mode": "data",
+                "name": "current",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_region"
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.data.external.archive_prepare[0]",
+                "index": 0,
+                "mode": "data",
+                "name": "archive_prepare",
+                "provider_name": "registry.opentofu.org/hashicorp/external",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "program": [
+                    false,
+                    false,
+                    false
+                  ],
+                  "query": {},
+                  "result": {}
+                },
+                "type": "external",
+                "values": {
+                  "program": [
+                    "python3",
+                    ".terraform/modules/test_module.lambda_routing_config_on_demand/package.py",
+                    "prepare"
+                  ],
+                  "query": {
+                    "artifacts_dir": "builds",
+                    "docker": null,
+                    "hash_extra": "test_eu-west-1_routing_on_demand",
+                    "hash_internal": "[\"eadf00000bd002258fe264981f05a7125cce4d9860ee10a9f817d05fb67b4aa9\"]",
+                    "quiet": "true",
+                    "recreate_missing_package": "true",
+                    "runtime": "python3.14",
+                    "source_path": "[{\"path\":\"../../lambda/attachment_manager\",\"pip_requirements\":true},{\"path\":\"./builds/test_eu-west-1_address_map\"}]"
+                  },
+                  "working_dir": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.local_file.archive_plan[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "archive_plan",
+                "provider_name": "registry.opentofu.org/hashicorp/local",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "sensitive_content": true
+                },
+                "type": "local_file",
+                "values": {
+                  "content_base64": null,
+                  "directory_permission": "0755",
+                  "file_permission": "0644",
+                  "sensitive_content": null,
+                  "source": null
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.null_resource.archive[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "archive",
+                "provider_name": "registry.opentofu.org/hashicorp/null",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "triggers": {}
+                },
+                "type": "null_resource",
+                "values": {
+                  "triggers": {}
+                }
+              },
+              {
+                "address": "module.test_module.module.lambda_routing_config_on_demand.terraform_data.package_filename_for_hash[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "package_filename_for_hash",
+                "provider_name": "terraform.io/builtin/terraform",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "input": {},
+                  "output": {}
+                },
+                "type": "terraform_data",
+                "values": {
+                  "input": {}
+                }
+              }
+            ]
+          }
+        ],
+        "resources": [
+          {
+            "address": "module.test_module.aws_cloudwatch_metric_alarm.dlq_messages[0]",
+            "identity": {
+              "account_id": null,
+              "alarm_name": null,
+              "region": null
+            },
+            "identity_schema_version": 0,
+            "index": 0,
+            "mode": "managed",
+            "name": "dlq_messages",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 1,
+            "sensitive_values": {
+              "dimensions": {},
+              "evaluation_criteria": [],
+              "evaluation_window": [],
+              "metric_query": [],
+              "tags_all": {},
+              "warm_up_configuration": []
+            },
+            "type": "aws_cloudwatch_metric_alarm",
+            "values": {
+              "actions_enabled": true,
+              "alarm_actions": null,
+              "alarm_description": "Alarm when messages arrive in the test dead-letter queue, indicating CloudWAN attachment events that failed all retry attempts.",
+              "alarm_name": "test_dlq_messages",
+              "comparison_operator": "GreaterThanOrEqualToThreshold",
+              "datapoints_to_alarm": null,
+              "dimensions": {
+                "QueueName": "test_dlq"
+              },
+              "evaluation_criteria": [],
+              "evaluation_interval": null,
+              "evaluation_periods": 1,
+              "evaluation_window": [],
+              "extended_statistic": null,
+              "insufficient_data_actions": null,
+              "metric_name": "ApproximateNumberOfMessagesVisible",
+              "metric_query": [],
+              "namespace": "AWS/SQS",
+              "ok_actions": null,
+              "period": 300,
+              "region": "eu-west-1",
+              "statistic": "Maximum",
+              "tags": null,
+              "threshold": 1,
+              "threshold_metric_id": null,
+              "treat_missing_data": "notBreaching",
+              "unit": null,
+              "warm_up_configuration": []
+            }
+          },
+          {
+            "address": "module.test_module.aws_lambda_event_source_mapping.attachment_created",
+            "identity": {
+              "account_id": null,
+              "region": null,
+              "uuid": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "attachment_created",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "amazon_managed_kafka_event_source_config": [],
+              "destination_config": [],
+              "document_db_event_source_config": [],
+              "filter_criteria": [],
+              "function_response_types": [
+                false
+              ],
+              "metrics_config": [],
+              "provisioned_poller_config": [],
+              "scaling_config": [],
+              "self_managed_event_source": [],
+              "self_managed_kafka_event_source_config": [],
+              "source_access_configuration": [],
+              "tags_all": {}
+            },
+            "type": "aws_lambda_event_source_mapping",
+            "values": {
+              "batch_size": null,
+              "bisect_batch_on_function_error": null,
+              "destination_config": [],
+              "document_db_event_source_config": [],
+              "enabled": true,
+              "filter_criteria": [],
+              "function_response_types": [
+                "ReportBatchItemFailures"
+              ],
+              "kms_key_arn": null,
+              "maximum_batching_window_in_seconds": null,
+              "metrics_config": [],
+              "provisioned_poller_config": [],
+              "queues": null,
+              "region": "eu-west-1",
+              "scaling_config": [],
+              "self_managed_event_source": [],
+              "source_access_configuration": [],
+              "starting_position": null,
+              "starting_position_timestamp": null,
+              "tags": null,
+              "timeouts": null,
+              "topics": null,
+              "tumbling_window_in_seconds": null,
+              "use_resource_timeout_for_propagation": null
+            }
+          },
+          {
+            "address": "module.test_module.aws_sns_topic_subscription.attachment_created",
+            "identity": {
+              "arn": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "attachment_created",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {},
+            "type": "aws_sns_topic_subscription",
+            "values": {
+              "confirmation_timeout_in_minutes": 1,
+              "delivery_policy": null,
+              "endpoint_auto_confirms": false,
+              "filter_policy": "{\"coreUplinkArn\":[\"arn:aws:networkmanager:us-east-1:111111111111:core-network/c0123456789abcdef\"]}",
+              "protocol": "sqs",
+              "raw_message_delivery": false,
+              "redrive_policy": null,
+              "region": "us-west-2",
+              "replay_policy": null,
+              "subscription_role_arn": null,
+              "topic_arn": "arn:aws:sns:us-west-2:111111111111:network_manager_events"
+            }
+          },
+          {
+            "address": "module.test_module.aws_sqs_queue.cloudwan_tag",
+            "identity": {
+              "url": null
+            },
+            "identity_schema_version": 1,
+            "mode": "managed",
+            "name": "cloudwan_tag",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "tags_all": {}
+            },
+            "type": "aws_sqs_queue",
+            "values": {
+              "content_based_deduplication": false,
+              "delay_seconds": 0,
+              "fifo_queue": false,
+              "kms_data_key_reuse_period_seconds": 0,
+              "kms_master_key_id": null,
+              "max_message_size": 262144,
+              "message_retention_seconds": 345600,
+              "name": "test",
+              "receive_wait_time_seconds": 0,
+              "region": "eu-west-1",
+              "sqs_managed_sse_enabled": true,
+              "tags": null,
+              "timeouts": null,
+              "visibility_timeout_seconds": 125
+            }
+          },
+          {
+            "address": "module.test_module.aws_sqs_queue.cloudwan_tag_dlq",
+            "identity": {
+              "url": null
+            },
+            "identity_schema_version": 1,
+            "mode": "managed",
+            "name": "cloudwan_tag_dlq",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "tags_all": {}
+            },
+            "type": "aws_sqs_queue",
+            "values": {
+              "content_based_deduplication": false,
+              "delay_seconds": 0,
+              "fifo_queue": false,
+              "kms_data_key_reuse_period_seconds": 0,
+              "kms_master_key_id": null,
+              "max_message_size": 262144,
+              "message_retention_seconds": 1209600,
+              "name": "test_dlq",
+              "receive_wait_time_seconds": 0,
+              "region": "eu-west-1",
+              "sqs_managed_sse_enabled": true,
+              "tags": null,
+              "timeouts": null,
+              "visibility_timeout_seconds": 30
+            }
+          },
+          {
+            "address": "module.test_module.aws_sqs_queue_policy.cloudwan_tag",
+            "identity": {
+              "queue_url": null
+            },
+            "identity_schema_version": 1,
+            "mode": "managed",
+            "name": "cloudwan_tag",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 1,
+            "sensitive_values": {},
+            "type": "aws_sqs_queue_policy",
+            "values": {
+              "region": "eu-west-1"
+            }
+          },
+          {
+            "address": "module.test_module.data.aws_iam_policy_document.lambda_routing_config_on_demand",
+            "mode": "data",
+            "name": "lambda_routing_config_on_demand",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "statement": [
+                {
+                  "actions": [
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [],
+                  "resources": [
+                    false
+                  ]
+                },
+                {
+                  "actions": [
+                    false,
+                    false,
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [],
+                  "resources": [
+                    false
+                  ]
+                },
+                {
+                  "actions": [
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [],
+                  "resources": [
+                    false
+                  ]
+                }
+              ]
+            },
+            "type": "aws_iam_policy_document",
+            "values": {
+              "override_json": null,
+              "override_policy_documents": null,
+              "policy_id": null,
+              "source_json": null,
+              "source_policy_documents": null,
+              "statement": [
+                {
+                  "actions": [
+                    "sts:AssumeRole"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [],
+                  "resources": [
+                    "arn:aws:iam::000000000000:role/org-reader"
+                  ],
+                  "sid": null
+                },
+                {
+                  "actions": [
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes",
+                    "sqs:ReceiveMessage"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [],
+                  "resources": [
+                    null
+                  ],
+                  "sid": null
+                },
+                {
+                  "actions": [
+                    "networkmanager:DeleteAttachment",
+                    "networkmanager:Get*",
+                    "networkmanager:List*",
+                    "networkmanager:TagResource"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [],
+                  "resources": [
+                    "*"
+                  ],
+                  "sid": null
+                }
+              ],
+              "version": null
+            }
+          },
+          {
+            "address": "module.test_module.data.aws_iam_policy_document.sqs_cloudwan_tag",
+            "mode": "data",
+            "name": "sqs_cloudwan_tag",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "statement": [
+                {
+                  "actions": [
+                    false
+                  ],
+                  "condition": [
+                    {
+                      "values": [
+                        false
+                      ]
+                    }
+                  ],
+                  "not_principals": [],
+                  "principals": [
+                    {
+                      "identifiers": [
+                        false
+                      ]
+                    }
+                  ],
+                  "resources": [
+                    false
+                  ]
+                }
+              ]
+            },
+            "type": "aws_iam_policy_document",
+            "values": {
+              "override_json": null,
+              "override_policy_documents": null,
+              "policy_id": null,
+              "source_json": null,
+              "source_policy_documents": null,
+              "statement": [
+                {
+                  "actions": [
+                    "sqs:SendMessage"
+                  ],
+                  "condition": [
+                    {
+                      "test": "ArnEquals",
+                      "values": [
+                        "arn:aws:sns:us-west-2:111111111111:network_manager_events"
+                      ],
+                      "variable": "aws:SourceArn"
+                    }
+                  ],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [
+                    {
+                      "identifiers": [
+                        "sns.amazonaws.com"
+                      ],
+                      "type": "Service"
+                    }
+                  ],
+                  "resources": [
+                    null
+                  ],
+                  "sid": null
+                }
+              ],
+              "version": null
+            }
+          },
+          {
+            "address": "module.test_module.local_file.vpc_segment_address_map[0]",
+            "index": 0,
+            "mode": "managed",
+            "name": "vpc_segment_address_map",
+            "provider_name": "registry.opentofu.org/hashicorp/local",
+            "schema_version": 0,
+            "sensitive_values": {
+              "sensitive_content": true
+            },
+            "type": "local_file",
+            "values": {
+              "content_base64": null,
+              "directory_permission": "0777",
+              "file_permission": "0644",
+              "sensitive_content": null,
+              "source": null
+            }
+          }
+        ]
+      },
+      {
+        "address": "module.test_module_regional",
+        "child_modules": [
+          {
+            "address": "module.test_module_regional.module.lambda_routing_config_on_demand",
+            "resources": [
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.aws_cloudwatch_log_group.lambda[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "region": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "lambda",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "tags_all": {}
+                },
+                "type": "aws_cloudwatch_log_group",
+                "values": {
+                  "kms_key_id": null,
+                  "name": "/aws/lambda/test-regional_eu-west-1_routing",
+                  "region": "eu-west-1",
+                  "retention_in_days": 1,
+                  "skip_destroy": false,
+                  "tags": null
+                }
+              },
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.aws_iam_role.lambda[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "lambda",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "inline_policy": [],
+                  "managed_policy_arns": [],
+                  "tags_all": {}
+                },
+                "type": "aws_iam_role",
+                "values": {
+                  "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                  "description": null,
+                  "force_detach_policies": true,
+                  "max_session_duration": 3600,
+                  "name": "test-regional_eu-west-1_routing",
+                  "path": "/",
+                  "permissions_boundary": null,
+                  "tags": null
+                }
+              },
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.aws_iam_role_policy.additional_json[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "role": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "additional_json",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_iam_role_policy",
+                "values": {
+                  "name": "test-regional_eu-west-1_routing",
+                  "role": "test-regional_eu-west-1_routing"
+                }
+              },
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.aws_iam_role_policy.logs[0]",
+                "identity": {
+                  "account_id": null,
+                  "name": null,
+                  "role": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "logs",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {},
+                "type": "aws_iam_role_policy",
+                "values": {
+                  "name": "test-regional_eu-west-1_routing-logs",
+                  "role": "test-regional_eu-west-1_routing"
+                }
+              },
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.aws_lambda_function.this[0]",
+                "identity": {
+                  "account_id": null,
+                  "function_name": null,
+                  "region": null
+                },
+                "identity_schema_version": 0,
+                "index": 0,
+                "mode": "managed",
+                "name": "this",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "architectures": [],
+                  "capacity_provider_config": [],
+                  "dead_letter_config": [],
+                  "durable_config": [],
+                  "environment": [
+                    {
+                      "variables": {}
+                    }
+                  ],
+                  "ephemeral_storage": [
+                    {}
+                  ],
+                  "file_system_config": [],
+                  "image_config": [],
+                  "logging_config": [
+                    {}
+                  ],
+                  "snap_start": [],
+                  "tags_all": {},
+                  "tenancy_config": [],
+                  "tracing_config": [],
+                  "vpc_config": []
+                },
+                "type": "aws_lambda_function",
+                "values": {
+                  "capacity_provider_config": [],
+                  "code_signing_config_arn": null,
+                  "dead_letter_config": [],
+                  "description": "",
+                  "durable_config": [],
+                  "environment": [
+                    {
+                      "variables": {
+                        "ACCOUNT_ROUTE_DOMAIN_TAG": "route-domain",
+                        "AWS_ACCOUNT_READ_ROLE_ARN": "arn:aws:iam::000000000000:role/org-reader",
+                        "FULL_RETURN_TABLE": "",
+                        "FULL_RETURN_TABLE_BY_REGION": "{\"eu-west-1\":\"inspectioneuw1\",\"eu-west-2\":\"inspectioneuw2\"}",
+                        "IGNORE_AWS_ACCOUNTS": "[]",
+                        "LOGGING_LEVEL": "WARN",
+                        "MANAGED_CORE_NETWORK_ARN": "arn:aws:networkmanager:us-east-1:111111111111:core-network/c0123456789abcdef",
+                        "MANAGED_GLOBAL_NETWORK_ID": "global-network-123456789",
+                        "PERFORM_ATTACHMENT_DELETIONS": "true",
+                        "PROCESS_ONLY_AWS_ACCOUNTS": "[]",
+                        "QUARANTINE_ROUTES_SEGMENT": "quarantineroutes",
+                        "QUARANTINE_SEGMENT": "quarantine",
+                        "SEGMENT_ADDRESSING_FILE": ""
+                      }
+                    }
+                  ],
+                  "ephemeral_storage": [
+                    {
+                      "size": 512
+                    }
+                  ],
+                  "file_system_config": [],
+                  "function_name": "test-regional_eu-west-1_routing",
+                  "handler": "lambda_handler.handler",
+                  "image_config": [],
+                  "image_uri": null,
+                  "kms_key_arn": null,
+                  "layers": null,
+                  "logging_config": [
+                    {
+                      "application_log_level": null,
+                      "log_format": "Text",
+                      "system_log_level": null
+                    }
+                  ],
+                  "memory_size": 128,
+                  "package_type": "Zip",
+                  "publish": false,
+                  "publish_to": null,
+                  "region": "eu-west-1",
+                  "replace_security_groups_on_destroy": null,
+                  "replacement_security_group_ids": null,
+                  "reserved_concurrent_executions": -1,
+                  "runtime": "python3.14",
+                  "s3_bucket": null,
+                  "s3_key": null,
+                  "s3_object_version": null,
+                  "skip_destroy": false,
+                  "snap_start": [],
+                  "source_kms_key_arn": null,
+                  "tags": null,
+                  "tenancy_config": [],
+                  "timeout": 90,
+                  "timeouts": null,
+                  "use_resource_timeout_for_propagation": null,
+                  "vpc_config": []
+                }
+              },
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.data.aws_iam_policy_document.logs[0]",
+                "index": 0,
+                "mode": "data",
+                "name": "logs",
+                "provider_name": "registry.opentofu.org/hashicorp/aws",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "statement": [
+                    {
+                      "actions": [
+                        false,
+                        false,
+                        false
+                      ],
+                      "condition": [],
+                      "not_principals": [],
+                      "principals": [],
+                      "resources": [
+                        false,
+                        false
+                      ]
+                    }
+                  ]
+                },
+                "type": "aws_iam_policy_document",
+                "values": {
+                  "override_json": null,
+                  "override_policy_documents": null,
+                  "policy_id": null,
+                  "source_json": null,
+                  "source_policy_documents": null,
+                  "statement": [
+                    {
+                      "actions": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "condition": [],
+                      "effect": "Allow",
+                      "not_actions": null,
+                      "not_principals": [],
+                      "not_resources": null,
+                      "principals": [],
+                      "resources": [
+                        null,
+                        null
+                      ],
+                      "sid": null
+                    }
+                  ],
+                  "version": null
+                }
+              },
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.local_file.archive_plan[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "archive_plan",
+                "provider_name": "registry.opentofu.org/hashicorp/local",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "sensitive_content": true
+                },
+                "type": "local_file",
+                "values": {
+                  "content_base64": null,
+                  "directory_permission": "0755",
+                  "file_permission": "0644",
+                  "sensitive_content": null,
+                  "source": null
+                }
+              },
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.null_resource.archive[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "archive",
+                "provider_name": "registry.opentofu.org/hashicorp/null",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "triggers": {}
+                },
+                "type": "null_resource",
+                "values": {
+                  "triggers": {}
+                }
+              },
+              {
+                "address": "module.test_module_regional.module.lambda_routing_config_on_demand.terraform_data.package_filename_for_hash[0]",
+                "index": 0,
+                "mode": "managed",
+                "name": "package_filename_for_hash",
+                "provider_name": "terraform.io/builtin/terraform",
+                "schema_version": 0,
+                "sensitive_values": {
+                  "input": {},
+                  "output": {}
+                },
+                "type": "terraform_data",
+                "values": {
+                  "input": {}
+                }
+              }
+            ]
+          }
+        ],
+        "resources": [
+          {
+            "address": "module.test_module_regional.aws_cloudwatch_metric_alarm.dlq_messages[0]",
+            "identity": {
+              "account_id": null,
+              "alarm_name": null,
+              "region": null
+            },
+            "identity_schema_version": 0,
+            "index": 0,
+            "mode": "managed",
+            "name": "dlq_messages",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 1,
+            "sensitive_values": {
+              "dimensions": {},
+              "evaluation_criteria": [],
+              "evaluation_window": [],
+              "metric_query": [],
+              "tags_all": {},
+              "warm_up_configuration": []
+            },
+            "type": "aws_cloudwatch_metric_alarm",
+            "values": {
+              "actions_enabled": true,
+              "alarm_actions": null,
+              "alarm_description": "Alarm when messages arrive in the test-regional dead-letter queue, indicating CloudWAN attachment events that failed all retry attempts.",
+              "alarm_name": "test-regional_dlq_messages",
+              "comparison_operator": "GreaterThanOrEqualToThreshold",
+              "datapoints_to_alarm": null,
+              "dimensions": {
+                "QueueName": "test-regional_dlq"
+              },
+              "evaluation_criteria": [],
+              "evaluation_interval": null,
+              "evaluation_periods": 1,
+              "evaluation_window": [],
+              "extended_statistic": null,
+              "insufficient_data_actions": null,
+              "metric_name": "ApproximateNumberOfMessagesVisible",
+              "metric_query": [],
+              "namespace": "AWS/SQS",
+              "ok_actions": null,
+              "period": 300,
+              "region": "eu-west-1",
+              "statistic": "Maximum",
+              "tags": null,
+              "threshold": 1,
+              "threshold_metric_id": null,
+              "treat_missing_data": "notBreaching",
+              "unit": null,
+              "warm_up_configuration": []
+            }
+          },
+          {
+            "address": "module.test_module_regional.aws_lambda_event_source_mapping.attachment_created",
+            "identity": {
+              "account_id": null,
+              "region": null,
+              "uuid": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "attachment_created",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "amazon_managed_kafka_event_source_config": [],
+              "destination_config": [],
+              "document_db_event_source_config": [],
+              "filter_criteria": [],
+              "function_response_types": [
+                false
+              ],
+              "metrics_config": [],
+              "provisioned_poller_config": [],
+              "scaling_config": [
+                {}
+              ],
+              "self_managed_event_source": [],
+              "self_managed_kafka_event_source_config": [],
+              "source_access_configuration": [],
+              "tags_all": {}
+            },
+            "type": "aws_lambda_event_source_mapping",
+            "values": {
+              "batch_size": null,
+              "bisect_batch_on_function_error": null,
+              "destination_config": [],
+              "document_db_event_source_config": [],
+              "enabled": true,
+              "filter_criteria": [],
+              "function_response_types": [
+                "ReportBatchItemFailures"
+              ],
+              "kms_key_arn": null,
+              "maximum_batching_window_in_seconds": null,
+              "metrics_config": [],
+              "provisioned_poller_config": [],
+              "queues": null,
+              "region": "eu-west-1",
+              "scaling_config": [
+                {
+                  "maximum_concurrency": 2
+                }
+              ],
+              "self_managed_event_source": [],
+              "source_access_configuration": [],
+              "starting_position": null,
+              "starting_position_timestamp": null,
+              "tags": null,
+              "timeouts": null,
+              "topics": null,
+              "tumbling_window_in_seconds": null,
+              "use_resource_timeout_for_propagation": null
+            }
+          },
+          {
+            "address": "module.test_module_regional.aws_sns_topic_subscription.attachment_created",
+            "identity": {
+              "arn": null
+            },
+            "identity_schema_version": 0,
+            "mode": "managed",
+            "name": "attachment_created",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {},
+            "type": "aws_sns_topic_subscription",
+            "values": {
+              "confirmation_timeout_in_minutes": 1,
+              "delivery_policy": null,
+              "endpoint_auto_confirms": false,
+              "filter_policy": "{\"coreUplinkArn\":[\"arn:aws:networkmanager:us-east-1:111111111111:core-network/c0123456789abcdef\"]}",
+              "protocol": "sqs",
+              "raw_message_delivery": false,
+              "redrive_policy": null,
+              "region": "us-west-2",
+              "replay_policy": null,
+              "subscription_role_arn": null,
+              "topic_arn": "arn:aws:sns:us-west-2:111111111111:network_manager_events"
+            }
+          },
+          {
+            "address": "module.test_module_regional.aws_sqs_queue.cloudwan_tag",
+            "identity": {
+              "url": null
+            },
+            "identity_schema_version": 1,
+            "mode": "managed",
+            "name": "cloudwan_tag",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "tags_all": {}
+            },
+            "type": "aws_sqs_queue",
+            "values": {
+              "content_based_deduplication": false,
+              "delay_seconds": 0,
+              "fifo_queue": false,
+              "kms_data_key_reuse_period_seconds": 0,
+              "kms_master_key_id": null,
+              "max_message_size": 262144,
+              "message_retention_seconds": 345600,
+              "name": "test-regional",
+              "receive_wait_time_seconds": 0,
+              "region": "eu-west-1",
+              "sqs_managed_sse_enabled": true,
+              "tags": null,
+              "timeouts": null,
+              "visibility_timeout_seconds": 125
+            }
+          },
+          {
+            "address": "module.test_module_regional.aws_sqs_queue.cloudwan_tag_dlq",
+            "identity": {
+              "url": null
+            },
+            "identity_schema_version": 1,
+            "mode": "managed",
+            "name": "cloudwan_tag_dlq",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "tags_all": {}
+            },
+            "type": "aws_sqs_queue",
+            "values": {
+              "content_based_deduplication": false,
+              "delay_seconds": 0,
+              "fifo_queue": false,
+              "kms_data_key_reuse_period_seconds": 0,
+              "kms_master_key_id": null,
+              "max_message_size": 262144,
+              "message_retention_seconds": 1209600,
+              "name": "test-regional_dlq",
+              "receive_wait_time_seconds": 0,
+              "region": "eu-west-1",
+              "sqs_managed_sse_enabled": true,
+              "tags": null,
+              "timeouts": null,
+              "visibility_timeout_seconds": 30
+            }
+          },
+          {
+            "address": "module.test_module_regional.aws_sqs_queue_policy.cloudwan_tag",
+            "identity": {
+              "queue_url": null
+            },
+            "identity_schema_version": 1,
+            "mode": "managed",
+            "name": "cloudwan_tag",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 1,
+            "sensitive_values": {},
+            "type": "aws_sqs_queue_policy",
+            "values": {
+              "region": "eu-west-1"
+            }
+          },
+          {
+            "address": "module.test_module_regional.data.aws_iam_policy_document.lambda_routing_config_on_demand",
+            "mode": "data",
+            "name": "lambda_routing_config_on_demand",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "statement": [
+                {
+                  "actions": [
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [],
+                  "resources": [
+                    false
+                  ]
+                },
+                {
+                  "actions": [
+                    false,
+                    false,
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [],
+                  "resources": [
+                    false
+                  ]
+                },
+                {
+                  "actions": [
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "condition": [],
+                  "not_principals": [],
+                  "principals": [],
+                  "resources": [
+                    false
+                  ]
+                }
+              ]
+            },
+            "type": "aws_iam_policy_document",
+            "values": {
+              "override_json": null,
+              "override_policy_documents": null,
+              "policy_id": null,
+              "source_json": null,
+              "source_policy_documents": null,
+              "statement": [
+                {
+                  "actions": [
+                    "sts:AssumeRole"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [],
+                  "resources": [
+                    "arn:aws:iam::000000000000:role/org-reader"
+                  ],
+                  "sid": null
+                },
+                {
+                  "actions": [
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes",
+                    "sqs:ReceiveMessage"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [],
+                  "resources": [
+                    null
+                  ],
+                  "sid": null
+                },
+                {
+                  "actions": [
+                    "networkmanager:DeleteAttachment",
+                    "networkmanager:Get*",
+                    "networkmanager:List*",
+                    "networkmanager:TagResource"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [],
+                  "resources": [
+                    "*"
+                  ],
+                  "sid": null
+                }
+              ],
+              "version": null
+            }
+          },
+          {
+            "address": "module.test_module_regional.data.aws_iam_policy_document.sqs_cloudwan_tag",
+            "mode": "data",
+            "name": "sqs_cloudwan_tag",
+            "provider_name": "registry.opentofu.org/hashicorp/aws",
+            "schema_version": 0,
+            "sensitive_values": {
+              "statement": [
+                {
+                  "actions": [
+                    false
+                  ],
+                  "condition": [
+                    {
+                      "values": [
+                        false
+                      ]
+                    }
+                  ],
+                  "not_principals": [],
+                  "principals": [
+                    {
+                      "identifiers": [
+                        false
+                      ]
+                    }
+                  ],
+                  "resources": [
+                    false
+                  ]
+                }
+              ]
+            },
+            "type": "aws_iam_policy_document",
+            "values": {
+              "override_json": null,
+              "override_policy_documents": null,
+              "policy_id": null,
+              "source_json": null,
+              "source_policy_documents": null,
+              "statement": [
+                {
+                  "actions": [
+                    "sqs:SendMessage"
+                  ],
+                  "condition": [
+                    {
+                      "test": "ArnEquals",
+                      "values": [
+                        "arn:aws:sns:us-west-2:111111111111:network_manager_events"
+                      ],
+                      "variable": "aws:SourceArn"
+                    }
+                  ],
+                  "effect": "Allow",
+                  "not_actions": null,
+                  "not_principals": [],
+                  "not_resources": null,
+                  "principals": [
+                    {
+                      "identifiers": [
+                        "sns.amazonaws.com"
+                      ],
+                      "type": "Service"
+                    }
+                  ],
+                  "resources": [
+                    null
+                  ],
+                  "sid": null
+                }
+              ],
+              "version": null
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

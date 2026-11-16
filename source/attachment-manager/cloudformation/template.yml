@@ -3,20 +3,21 @@ Transform: AWS::Serverless-2016-10-31
 Description: "This template installs the CloudWAN Attachment Manager (SO9490) as part of deploying the AWS Cloud WAN Attachment Management solution"
 
 Parameters:
-  
+
   Name:
     Description: "Name of the Attachment Manager objects"
     Type: String
+    AllowedPattern: "^[a-zA-Z0-9_-]{1,64}$"
 
   AwsAccountReaderRoleArn:
     Description: "ARN of the Management Account role to allow reading the AWS Organization Structure"
     Type: String
-  
+
   NetworkEventsSnsTopicRegion:
     Description: "Region of the topic containing curated events from Network Manager"
     Type: String
     Default: us-west-2
-  
+
   NetworkEventsSnsTopicArn:
     Description: "ARN of the topic containing curated events from Network Manager"
     Type: String
@@ -28,14 +29,16 @@ Parameters:
   CoreNetworkArn:
     Description: "Cloud WAN Core Network ARN to manage"
     Type: String
-  
+
   SqsEventsDelaySeconds:
     Description: "SQS delay between receiving a message, and allowing it to be visible for processing"
     Type: Number
     Default: 0
+    MinValue: 0
+    MaxValue: 900
 
   PerformOffendingAttachmentDeletion:
-    Description: "Allow lambda to perform attachment deletions"
+    Description: "Allow lambda to perform attachment deletions (when false, offending attachments are tagged to the quarantine segment instead)"
     Type: String
     AllowedValues:
       - "true"
@@ -43,9 +46,81 @@ Parameters:
     Default: "true"
 
   FullReturnTable:
-    Description: "Full return table containing every known network route"
+    Description: "Cloud WAN segment containing every known network route, used to detect conflicting routes (letters and numbers only). Leave empty to disable conflict detection for regions not listed in FullReturnTableByRegion"
     Type: String
-  
+    Default: ""
+    AllowedPattern: "^[A-Za-z0-9]*$"
+
+  FullReturnTableByRegion:
+    Description: "JSON map of region to the Cloud WAN segment containing every known route for that edge location, taking precedence over FullReturnTable (e.g. {\"eu-west-1\": \"inspectioneuw1\"} when the last-hop loopback is removed)"
+    Type: String
+    Default: "{}"
+
+  AccountRouteDomainTag:
+    Description: "AWS Organizations account tag holding the Cloud WAN segment of the account"
+    Type: String
+    Default: "route-domain"
+
+  QuarantineSegment:
+    Description: "Cloud WAN segment for attachment quarantine (letters and numbers only)"
+    Type: String
+    Default: "quarantine"
+    AllowedPattern: "^[A-Za-z0-9]+$"
+
+  QuarantineRoutesSegment:
+    Description: "Cloud WAN segment for quarantined attachments route learning (letters and numbers only)"
+    Type: String
+    Default: "quarantineroutes"
+    AllowedPattern: "^[A-Za-z0-9]+$"
+
+  IgnoreAwsAccounts:
+    Description: "JSON list of AWS account ids whose attachments are ignored (e.g. [\"111111111111\"])"
+    Type: String
+    Default: "[]"
+
+  ProcessOnlyAwsAccounts:
+    Description: "JSON list of AWS account ids to exclusively process; empty list processes every account"
+    Type: String
+    Default: "[]"
+
+  LoggingLevel:
+    Description: "Logging verbosity of the Lambda function"
+    Type: String
+    AllowedValues:
+      - "WARN"
+      - "INFO"
+      - "DEBUG"
+    Default: "WARN"
+
+  LogRetentionInDays:
+    Description: "Number of days to retain the Lambda function logs"
+    Type: Number
+    Default: 30
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653]
+
+  DlqAlarmSnsTopicArn:
+    Description: "Optional SNS topic ARN notified when events land in the dead-letter queue"
+    Type: String
+    Default: ""
+
+  SqsMaximumConcurrency:
+    Description: "Maximum concurrent Lambda invocations started by the SQS event source mapping (2-1000). 0 means no limit. Use it instead of reserved concurrency: throttled receives count towards the DLQ redrive"
+    Type: Number
+    Default: 0
+    MinValue: 0
+    MaxValue: 1000
+
+Rules:
+  SqsMaximumConcurrencyRange:
+    RuleCondition: !Not [!Equals [!Ref SqsMaximumConcurrency, 0]]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref SqsMaximumConcurrency, 1]]
+        AssertDescription: "SqsMaximumConcurrency must be 0 (no limit) or between 2 and 1000"
+
+Conditions:
+  HasDlqAlarmTopic: !Not [!Equals [!Ref DlqAlarmSnsTopicArn, ""]]
+  HasSqsMaximumConcurrency: !Not [!Equals [!Ref SqsMaximumConcurrency, 0]]
+
 Resources:
 
   CloudWanEventsSqsDlq:
@@ -53,6 +128,9 @@ Resources:
     Properties:
       QueueName: !Join ["-", [!Ref Name, "dlq"]]
       SqsManagedSseEnabled: true
+      # 14 days: for standard queues the retention counts from the original
+      # enqueue time, so the default (4 days) could expire messages early.
+      MessageRetentionPeriod: 1209600
 
   CloudWanEventsSqs:
     Type: AWS::SQS::Queue
@@ -60,38 +138,34 @@ Resources:
       QueueName: !Ref Name
       SqsManagedSseEnabled: true
       DelaySeconds: !Ref SqsEventsDelaySeconds
-      VisibilityTimeout: 96
+      # Must exceed the Lambda timeout (90 s). Also the back-off before retrying
+      # an attachment that is not ready yet.
+      VisibilityTimeout: 125
       RedrivePolicy:
-        deadLetterTargetArn : !GetAtt CloudWanEventsSqsDlq.Arn
-        maxReceiveCount : 3 
-      
+        deadLetterTargetArn: !GetAtt CloudWanEventsSqsDlq.Arn
+        maxReceiveCount: 5
+
   CloudWanEventsSqsPolicy:
     Type: AWS::SQS::QueuePolicy
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-          - id: F21
-            reason: "SQS Queue policy should not allow * principal | False positive, principal is restricted by condition."
     Properties:
-      Queues: 
+      Queues:
         - !GetAtt CloudWanEventsSqs.QueueUrl
       PolicyDocument:
-        Statement: 
-        - Effect: "Allow"
-          Action: 
-            - "SQS:SendMessage" 
-          Resource: !GetAtt CloudWanEventsSqs.Arn
-          Principal:  
-            AWS: "*" 
-          Condition:
-            ArnEquals:
-              "aws:SourceArn": !Ref NetworkEventsSnsTopicArn
-      
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "sqs:SendMessage"
+            Resource: !GetAtt CloudWanEventsSqs.Arn
+            Principal:
+              Service: "sns.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !Ref NetworkEventsSnsTopicArn
 
   SegmentControlLambdaRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !Join ["-", [!Ref Name, !Ref AWS::Region, "segment", "control"] ]
+      RoleName: !Join ["-", [!Ref Name, !Ref AWS::Region, "segment", "control"]]
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -104,7 +178,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: AssociateTgwRouteTablePolicyIAMCompanion
+        - PolicyName: CloudWanAttachmentManager
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -114,8 +188,6 @@ Resources:
                   - "networkmanager:List*"
                   - "networkmanager:DeleteAttachment"
                   - "networkmanager:TagResource"
-                  - "networkmanager:GetNetworkRoutes"
-                  - "ec2:DescribeRegions"
                 Resource: "*"
               - Effect: Allow
                 Action:
@@ -124,7 +196,6 @@ Resources:
               - Effect: Allow
                 Action:
                   - "sqs:ReceiveMessage"
-                  - "sqs:SendMessage"
                   - "sqs:DeleteMessage"
                   - "sqs:GetQueueAttributes"
                 Resource: !GetAtt CloudWanEventsSqs.Arn
@@ -132,11 +203,12 @@ Resources:
   SegmentControlLambdaFunction:
     Type: "AWS::Serverless::Function"
     Properties:
-      FunctionName: !Join ["-", [!Ref Name, "segment", "control"] ]
+      FunctionName: !Join ["-", [!Ref Name, "segment", "control"]]
       CodeUri: ../lambda/attachment_manager
       Handler: lambda_handler.handler
-      Runtime: python3.12
+      Runtime: python3.14
       Timeout: 90
+      MemorySize: 128
       Role: !GetAtt SegmentControlLambdaRole.Arn
       Environment:
         Variables:
@@ -144,25 +216,36 @@ Resources:
           MANAGED_CORE_NETWORK_ARN: !Ref CoreNetworkArn
           MANAGED_GLOBAL_NETWORK_ID: !Ref GlobalNetworkId
           FULL_RETURN_TABLE: !Ref FullReturnTable
+          FULL_RETURN_TABLE_BY_REGION: !Ref FullReturnTableByRegion
           PERFORM_ATTACHMENT_DELETIONS: !Ref PerformOffendingAttachmentDeletion
-          SQS_URL: !GetAtt CloudWanEventsSqs.QueueUrl
           SEGMENT_ADDRESSING_FILE: vpc_segment_address_map.yml
-          
-  SegmentControlLambdaSqsPermission:
-    Type: AWS::Lambda::Permission
+          ACCOUNT_ROUTE_DOMAIN_TAG: !Ref AccountRouteDomainTag
+          QUARANTINE_SEGMENT: !Ref QuarantineSegment
+          QUARANTINE_ROUTES_SEGMENT: !Ref QuarantineRoutesSegment
+          IGNORE_AWS_ACCOUNTS: !Ref IgnoreAwsAccounts
+          PROCESS_ONLY_AWS_ACCOUNTS: !Ref ProcessOnlyAwsAccounts
+          LOGGING_LEVEL: !Ref LoggingLevel
+
+  SegmentControlLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
     Properties:
-      Action: "lambda:InvokeFunction"
-      FunctionName: !GetAtt SegmentControlLambdaFunction.Arn
-      Principal: "sqs.amazonaws.com"
-      SourceAccount: !Ref AWS::AccountId
-      SourceArn: !GetAtt CloudWanEventsSqs.Arn
+      LogGroupName: !Sub "/aws/lambda/${SegmentControlLambdaFunction}"
+      RetentionInDays: !Ref LogRetentionInDays
 
   SegmentControlLambdaSqsEventMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       EventSourceArn: !GetAtt CloudWanEventsSqs.Arn
       FunctionName: !GetAtt SegmentControlLambdaFunction.Arn
-  
+      # Attachments that are not ready yet are handed back to SQS individually
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      # Limits concurrency at the poller instead of throttling the function
+      ScalingConfig: !If
+        - HasSqsMaximumConcurrency
+        - MaximumConcurrency: !Ref SqsMaximumConcurrency
+        - !Ref "AWS::NoValue"
+
   CloudWanEventsSqsSubscriptionToSns:
     Type: AWS::SNS::Subscription
     Properties:
@@ -173,3 +256,33 @@ Resources:
       FilterPolicy:
         coreUplinkArn:
           - !Ref CoreNetworkArn
+
+  CloudWanEventsDlqAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Join ["-", [!Ref Name, "dlq", "messages"]]
+      AlarmDescription: !Sub "Cloud WAN attachment events that exhausted all retries in the ${Name} dead-letter queue"
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt CloudWanEventsSqsDlq.QueueName
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasDlqAlarmTopic, [!Ref DlqAlarmSnsTopicArn], !Ref "AWS::NoValue"]
+      OKActions: !If [HasDlqAlarmTopic, [!Ref DlqAlarmSnsTopicArn], !Ref "AWS::NoValue"]
+
+Outputs:
+
+  SqsQueueArn:
+    Value: !GetAtt CloudWanEventsSqs.Arn
+
+  SqsDlqArn:
+    Value: !GetAtt CloudWanEventsSqsDlq.Arn
+
+  LambdaFunctionArn:
+    Value: !GetAtt SegmentControlLambdaFunction.Arn

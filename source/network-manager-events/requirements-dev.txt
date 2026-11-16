@@ -1,0 +1,12 @@
+boto3
+pyyaml
+pytest
+pytest-env
+pytest-order
+syrupy
+terraform-snapshot-test
+mypy
+types-PyYAML
+bandit
+cfn-lint
+pre-commit
